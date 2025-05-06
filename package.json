@@ -4,7 +4,8 @@
   "description": "Proximamente a ser desplegado en una EC2 en AWS",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
   },
   "keywords": [],
   "author": "",
@@ -17,5 +18,8 @@
     "express-session": "^1.18.1",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
   }
 }
