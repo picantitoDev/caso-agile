@@ -63,7 +63,7 @@ app.post(
     failureFlash: true,
   }),
   (req, res) => {
-    if (req.user.rol === "Admin") {
+    if (req.user.role === "admin") {
       return res.redirect("/admin/home")
     } else {
       return res.redirect("/user/home")

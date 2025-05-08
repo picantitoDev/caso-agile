@@ -1,15 +1,44 @@
 const pool = require("./pool")
 
-const buscarUsuarioPorNombre = async (nombre) => {}
+// Buscar usuario por nombre
+const buscarUsuarioPorNombre = async (nombre) => {
+  const query = "SELECT * FROM usuarios WHERE username = $1"
+  const values = [nombre]
 
-async function buscarUsuarioPorEmail(email) {}
+  const { rows } = await pool.query(query, values)
+  return rows[0] // Devuelve solo un usuario
+}
 
-async function obtenerUsuarios() {}
+// Obtener todos los usuarios
+async function obtenerUsuarios() {
+  const { rows } = await pool.query("SELECT * FROM usuarios")
+  return rows
+}
 
-const buscarUsuarioPorNombreOCorreo = async (input) => {}
+// Buscar usuario por ID
+const buscarUsuarioPorId = async (id) => {
+  const query = "SELECT * FROM usuarios WHERE id = $1"
+  const values = [id]
 
-const buscarUsuarioPorId = async (id) => {}
+  const { rows } = await pool.query(query, values)
+  return rows[0]
+}
 
-const crearUsuario = async ({ username, password, email, rol }) => {}
+// Crear un nuevo usuario
+const crearUsuario = async ({ username, password, rol }) => {
+  const query = `
+    INSERT INTO usuarios (username, password, role)
+    VALUES ($1, $2, $3)
+    RETURNING *`
+  const values = [username, password, rol]
 
-module.exports = {}
+  const { rows } = await pool.query(query, values)
+  return rows[0]
+}
+
+module.exports = {
+  buscarUsuarioPorNombre,
+  obtenerUsuarios,
+  buscarUsuarioPorId,
+  crearUsuario,
+}
