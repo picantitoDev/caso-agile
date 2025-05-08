@@ -1,13 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
   <head>
-    <title>Admin Home</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel de Administrador</title>
+    <link rel="stylesheet" href="/adminHome.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
   </head>
   <body>
-    <h1>Bienvenido, Administrador <%= user.username %>!</h1>
+    <header class="header">
+      <h1>Sistema de Gestión de Acreditación</h1>
+      <div class="user-info">
+        <span><%= user.username %> (Administrador)</span>
+        <a href="/log-out" class="logout-btn">Cerrar sesión</a>
+      </div>
+    </header>
 
-    <p>Este es tu panel de administración.</p>
+    <div class="main-container">
+      <div class="welcome-section">
+        <h2>Panel de Administrador</h2>
+        <p>
+          Bienvenido al panel de administración. Seleccione una opción para
+          comenzar.
+        </p>
+      </div>
 
-    <a href="/log-out">Cerrar sesión</a>
+      <div class="dashboard-grid">
+        <!-- Tarjeta de Usuarios -->
+        <div class="menu-card">
+          <div class="card-header">
+            <i class="fas fa-users"></i>
+            <h3>Gestión de Usuarios</h3>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              Administre los usuarios del sistema. Cree, edite o elimine cuentas
+              de usuarios, asigne roles y permisos.
+            </p>
+            <a href="/admin/users" class="card-link">Administrar Usuarios</a>
+          </div>
+        </div>
+
+        <!-- Tarjeta de Solicitudes -->
+        <div class="menu-card">
+          <div class="card-header">
+            <i class="fas fa-clipboard-list"></i>
+            <h3>Gestión de Solicitudes</h3>
+          </div>
+          <div class="card-body">
+            <p class="card-description">
+              Revise y gestione las solicitudes de acreditación. Vea el estado
+              de las solicitudes, apruebe o rechace solicitudes pendientes.
+            </p>
+            <a href="/admin/requests" class="card-link"
+              >Administrar Solicitudes</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <p>
+        &copy; 2025 Sistema de Gestión de Acreditación. Todos los derechos
+        reservados.
+      </p>
+    </footer>
   </body>
 </html>
