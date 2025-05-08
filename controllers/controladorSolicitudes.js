@@ -62,9 +62,83 @@ async function verSolicitudesUsuario(req, res) {
   }
 }
 
+async function verDetalleSolicitud(req, res) {
+  try {
+    const id_solicitud = req.params.id
+
+    // Obtener lista de secciones (9 predefinidas)
+    const secciones = await dbSolicitudes.obtenerSecciones()
+
+    // Obtener archivos ya subidos para esta solicitud
+    const archivos = await dbSolicitudes.obtenerArchivosPorSolicitud(
+      id_solicitud
+    )
+
+    // Mapear archivos por sección para facilitar el renderizado
+    const archivosPorSeccion = secciones.map((seccion) => {
+      return {
+        seccion,
+        archivos:
+          archivos.filter(
+            (archivo) => archivo.id_seccion === seccion.id_seccion
+          ) || [],
+      }
+    })
+
+    res.render("detalleSolicitud", {
+      solicitudId: id_solicitud,
+      secciones,
+      archivosPorSeccion,
+      user: req.user,
+    })
+  } catch (error) {
+    console.error("Error al cargar detalle:", error)
+    res.status(500).send("Error al cargar detalle de solicitud")
+  }
+}
+
+// controllers/controladorSolicitudes.js
+async function guardarCambios(req, res) {
+  try {
+    const id_solicitud = req.params.id
+    const archivos = req.files
+
+    if (!archivos || Object.keys(archivos).length === 0) {
+      return res.status(400).send("No se recibieron archivos.")
+    }
+
+    for (let fieldName in archivos) {
+      const match = fieldName.match(/archivos\[(\d+)\]\[\]/)
+      if (!match) continue // Si no coincide con el patrón esperado, lo salta
+
+      const seccionId = parseInt(match[1], 10)
+      const archivosSeccion = archivos[fieldName]
+
+      for (let archivo of archivosSeccion) {
+        const archivoBuffer = archivo.buffer
+
+        await dbSolicitudes.guardarArchivo(
+          id_solicitud,
+          seccionId,
+          archivo.originalname,
+          archivo.mimetype,
+          archivoBuffer
+        )
+      }
+    }
+
+    res.redirect(`/user/home`)
+  } catch (error) {
+    console.error("Error al guardar cambios:", error)
+    res.status(500).send("Error al guardar cambios")
+  }
+}
+
 module.exports = {
   crearSolicitudGet,
   crearSolicitudPost,
   gestionSolicitudesGet,
   verSolicitudesUsuario,
+  verDetalleSolicitud,
+  guardarCambios,
 }

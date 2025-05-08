@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Detalle de Solicitud</title>
+    <link rel="stylesheet" href="/detalleSolicitud.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Detalle de Solicitud</h1>
+      <div class="user-info">
+        <span><%= user.username %> - <%= user.universidad %></span>
+        <a href="/log-out" class="logout-btn">Cerrar sesión</a>
+      </div>
+    </header>
+
+    <div class="container">
+      <form
+        action="/user/solicitudes/<%= solicitudId %>/guardar-cambios"
+        method="POST"
+        enctype="multipart/form-data"
+      >
+        <% secciones.forEach(seccion => { %>
+        <div class="seccion">
+          <h2><%= seccion.nombre %></h2>
+
+          <% const archivosSeccion = archivosPorSeccion.find(a =>
+          a.seccion.id_seccion === seccion.id_seccion); %> <% if
+          (archivosSeccion && archivosSeccion.archivos.length > 0) { %>
+          <div class="archivos-subidos">
+            <h3>Archivos subidos:</h3>
+            <ul>
+              <% archivosSeccion.archivos.forEach(archivo => { %>
+              <li><%= archivo.nombre_archivo %> (<%= archivo.tipo_mime %>)</li>
+              <% }) %>
+            </ul>
+          </div>
+          <% } else { %>
+          <p>No se han subido archivos aún.</p>
+          <% } %>
+
+          <label for="archivo-<%= seccion.id_seccion %>">
+            Subir archivo(s):
+          </label>
+          <input
+            type="file"
+            id="archivo-<%= seccion.id_seccion %>"
+            name="archivos[<%= seccion.id_seccion %>][]"
+            multiple
+            accept=".pdf"
+          />
+        </div>
+        <% }) %>
+
+        <button type="submit">Guardar cambios</button>
+      </form>
+    </div>
+  </body>
+</html>

@@ -58,8 +58,53 @@ async function obtenerSolicitudesPorUsuario(id_usuario) {
   return rows
 }
 
+async function obtenerSecciones() {
+  const { rows } = await pool.query("SELECT * FROM seccion ORDER BY id_seccion")
+  return rows
+}
+
+async function obtenerArchivosPorSolicitud(id_solicitud) {
+  const query = `
+    SELECT * FROM archivo_seccion WHERE id_solicitud = $1
+  `
+  const { rows } = await pool.query(query, [id_solicitud])
+  return rows
+}
+
+async function guardarArchivo(
+  id_solicitud,
+  id_seccion,
+  nombre_archivo,
+  tipo_mime,
+  archivoBuffer
+) {
+  const query = `
+    INSERT INTO archivo_seccion (id_solicitud, id_seccion, nombre_archivo, tipo_mime, archivo, fecha_subida)
+    VALUES ($1, $2, $3, $4, $5, NOW())
+    RETURNING id_archivo;
+  `
+  const values = [
+    id_solicitud,
+    id_seccion,
+    nombre_archivo,
+    tipo_mime,
+    archivoBuffer,
+  ]
+
+  try {
+    const result = await pool.query(query, values)
+    return result.rows[0].id_archivo // Devuelve el ID del archivo insertado (si es necesario)
+  } catch (error) {
+    console.error("Error al guardar archivo en la base de datos:", error)
+    throw error
+  }
+}
+
 module.exports = {
+  obtenerSecciones,
+  obtenerArchivosPorSolicitud,
   crearSolicitud,
   obtenerSolicitudes,
   obtenerSolicitudesPorUsuario,
+  guardarArchivo,
 }
