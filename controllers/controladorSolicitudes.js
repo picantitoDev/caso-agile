@@ -40,6 +40,7 @@ async function crearSolicitudPost(req, res) {
 async function gestionSolicitudesGet(req, res) {
   try {
     const solicitudes = await dbSolicitudes.obtenerSolicitudes()
+    console.log(solicitudes)
     res.render("solicitudes", { solicitudes })
   } catch (error) {
     console.error("Error al cargar formulario:", error)
@@ -134,6 +135,72 @@ async function guardarCambios(req, res) {
   }
 }
 
+async function gestionDetalleSolicitudGet(req, res) {
+  try {
+    const id_solicitud = req.params.id
+
+    // Obtener la solicitud
+    const solicitud = await dbSolicitudes.obtenerSolicitudPorId(id_solicitud)
+    if (!solicitud) {
+      return res.status(404).send("Solicitud no encontrada.")
+    }
+
+    // Obtener las secciones
+    const secciones = await dbSolicitudes.obtenerSecciones()
+
+    // Obtener los archivos agrupados por sección
+    const archivos = await dbSolicitudes.obtenerArchivosPorSolicitudAdmin(
+      id_solicitud
+    )
+
+    // Agrupar por id_seccion
+    const archivosPorSeccion = secciones.map((seccion) => {
+      return {
+        seccion,
+        archivos: archivos.filter((a) => a.id_seccion === seccion.id_seccion),
+      }
+    })
+
+    res.render("detalleSolicitudAdmin", {
+      solicitud,
+      secciones,
+      archivosPorSeccion,
+    })
+  } catch (error) {
+    console.error("Error al obtener detalle de solicitud:", error)
+    res.status(500).send("Error interno del servidor")
+  }
+}
+
+async function descargarArchivo(req, res) {
+  try {
+    const id_archivo = req.params.id_archivo
+
+    const archivo = await dbSolicitudes.obtenerArchivoPorId(id_archivo)
+
+    if (!archivo) {
+      return res.status(404).send("Archivo no encontrado.")
+    }
+
+    res.setHeader("Content-Type", archivo.tipo_mime)
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${archivo.nombre_archivo}"`
+    )
+
+    console.log({
+      nombre: archivo.nombre_archivo,
+      tipo: archivo.tipo_mime,
+      bufferLength: archivo.archivo?.length,
+      tipoReal: typeof archivo.archivo,
+    })
+    res.send(archivo.archivo) // 'archivo' es el campo tipo bytea
+  } catch (error) {
+    console.error("Error al descargar archivo:", error)
+    res.status(500).send("Error al descargar archivo.")
+  }
+}
+
 module.exports = {
   crearSolicitudGet,
   crearSolicitudPost,
@@ -141,4 +208,6 @@ module.exports = {
   verSolicitudesUsuario,
   verDetalleSolicitud,
   guardarCambios,
+  gestionDetalleSolicitudGet,
+  descargarArchivo,
 }

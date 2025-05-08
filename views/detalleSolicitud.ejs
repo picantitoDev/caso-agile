@@ -23,7 +23,10 @@
       >
         <% secciones.forEach(seccion => { %>
         <div class="seccion">
-          <h2><%= seccion.nombre %></h2>
+          <h2>
+            <%= seccion.nombre .split(' ') .map(palabra =>
+            palabra.charAt(0).toUpperCase() + palabra.slice(1)) .join(' ') %>
+          </h2>
 
           <% const archivosSeccion = archivosPorSeccion.find(a =>
           a.seccion.id_seccion === seccion.id_seccion); %> <% if
@@ -32,7 +35,7 @@
             <h3>Archivos subidos:</h3>
             <ul>
               <% archivosSeccion.archivos.forEach(archivo => { %>
-              <li><%= archivo.nombre_archivo %> (<%= archivo.tipo_mime %>)</li>
+              <li><%= archivo.nombre_archivo %></li>
               <% }) %>
             </ul>
           </div>

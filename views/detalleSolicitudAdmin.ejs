@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Detalle de Solicitud</title>
+    <link rel="stylesheet" href="/detalleSolicitudAdmin.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Detalle de Solicitud</h1>
+      <div class="info-solicitud">
+        <p><strong>Universidad:</strong> <%= solicitud.nombre_universidad %></p>
+        <p><strong>Representante:</strong> <%= solicitud.username %></p>
+        <p><strong>Carrera:</strong> <%= solicitud.nombre_carrera %></p>
+        <p>
+          <strong>Fecha de Creación:</strong> <%=
+          solicitud.fecha_creacion.toLocaleDateString() %>
+        </p>
+      </div>
+    </header>
+
+    <main class="container">
+      <% secciones.forEach(seccion => { %>
+      <div class="seccion">
+        <h2><%= seccion.nombre.replace(/\b\w/g, c => c.toUpperCase()) %></h2>
+
+        <% const archivosSeccion = archivosPorSeccion.find(a =>
+        a.seccion.id_seccion === seccion.id_seccion); %> <% if (archivosSeccion
+        && archivosSeccion.archivos.length > 0) { %>
+        <ul class="lista-archivos">
+          <% archivosSeccion.archivos.forEach(archivo => { %>
+          <li>
+            <span
+              ><%= archivo.nombre_archivo %> (<%= archivo.tipo_mime %>)</span
+            >
+            <a
+              href="/admin/descargar-archivo/<%= archivo.id_archivo %>"
+              class="btn-descargar"
+              download
+              >Descargar</a
+            >
+          </li>
+          <% }) %>
+        </ul>
+        <% } else { %>
+        <p class="sin-archivos">No hay archivos subidos en esta sección.</p>
+        <% } %>
+      </div>
+      <% }) %>
+    </main>
+  </body>
+</html>

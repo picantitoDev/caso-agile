@@ -17,5 +17,13 @@ router.get("/users/crear-usuario", (req, res) => {
 router.get("/crear-solicitud", controladorSolicitudes.crearSolicitudGet)
 router.post("/crear-solicitud", controladorSolicitudes.crearSolicitudPost)
 router.get("/solicitudes", controladorSolicitudes.gestionSolicitudesGet)
+router.get(
+  "/solicitudes/:id",
+  controladorSolicitudes.gestionDetalleSolicitudGet
+)
+router.get(
+  "/descargar-archivo/:id_archivo",
+  controladorSolicitudes.descargarArchivo
+)
 
 module.exports = router

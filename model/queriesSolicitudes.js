@@ -32,7 +32,7 @@ async function crearSolicitud(
 // Obtener todas las solicitudes
 async function obtenerSolicitudes() {
   const query = `
-      SELECT s.id_solicitud, s.nombre_carrera, s.fecha_creacion,
+      SELECT s.id_solicitud, s.nombre_carrera, s.fecha_creacion, s.estado,
              u.username, u.universidad
       FROM solicitud_acreditacion s
       JOIN usuarios u ON s.id_usuario = u.id_usuario
@@ -100,6 +100,37 @@ async function guardarArchivo(
   }
 }
 
+//sep
+
+async function obtenerSolicitudPorId(id_solicitud) {
+  const result = await pool.query(
+    "SELECT * FROM solicitud_acreditacion WHERE id_solicitud = $1",
+    [id_solicitud]
+  )
+  return result.rows[0]
+}
+
+async function obtenerArchivosPorSolicitudAdmin(id_solicitud) {
+  const result = await pool.query(
+    `SELECT id_archivo, id_seccion, nombre_archivo, tipo_mime 
+     FROM archivo_seccion 
+     WHERE id_solicitud = $1 
+     ORDER BY fecha_subida`,
+    [id_solicitud]
+  )
+  return result.rows
+}
+
+async function obtenerArchivoPorId(id_archivo) {
+  const result = await pool.query(
+    `SELECT nombre_archivo, tipo_mime, archivo 
+     FROM archivo_seccion 
+     WHERE id_archivo = $1`,
+    [id_archivo]
+  )
+  return result.rows[0]
+}
+
 module.exports = {
   obtenerSecciones,
   obtenerArchivosPorSolicitud,
@@ -107,4 +138,7 @@ module.exports = {
   obtenerSolicitudes,
   obtenerSolicitudesPorUsuario,
   guardarArchivo,
+  obtenerSolicitudPorId,
+  obtenerArchivosPorSolicitudAdmin,
+  obtenerArchivoPorId,
 }
