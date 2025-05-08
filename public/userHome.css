@@ -40,6 +40,8 @@ body {
   cursor: pointer;
   font-size: 0.9rem;
   transition: background-color 0.3s;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .logout-btn:hover {
