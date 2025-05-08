@@ -42,7 +42,24 @@ async function obtenerSolicitudes() {
   return rows
 }
 
+async function obtenerSolicitudesPorUsuario(id_usuario) {
+  const query = `
+    SELECT 
+      id_solicitud,
+      nombre_carrera,
+      nombre_universidad,
+      estado,
+      fecha_creacion
+    FROM solicitud_acreditacion
+    WHERE id_usuario = $1
+    ORDER BY fecha_creacion DESC;
+  `
+  const { rows } = await pool.query(query, [id_usuario])
+  return rows
+}
+
 module.exports = {
   crearSolicitud,
   obtenerSolicitudes,
+  obtenerSolicitudesPorUsuario,
 }

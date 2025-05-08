@@ -47,8 +47,24 @@ async function gestionSolicitudesGet(req, res) {
   }
 }
 
+async function verSolicitudesUsuario(req, res) {
+  try {
+    const solicitudes = await dbSolicitudes.obtenerSolicitudesPorUsuario(
+      req.user.id_usuario
+    )
+    res.render("userHome", {
+      user: req.user,
+      solicitudes,
+    })
+  } catch (error) {
+    console.error("Error al obtener solicitudes del usuario:", error)
+    res.status(500).send("Error al cargar solicitudes")
+  }
+}
+
 module.exports = {
   crearSolicitudGet,
   crearSolicitudPost,
   gestionSolicitudesGet,
+  verSolicitudesUsuario,
 }

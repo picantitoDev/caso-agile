@@ -13,6 +13,7 @@ const verificarAdmin = require("./auth/authMiddlewareAdmin")
 
 // Importar rutas
 const rutaAdmin = require("./routes/rutaAdmin")
+const rutaUser = require("./routes/rutaUser")
 
 // Middleware
 app.use(express.json())
@@ -50,12 +51,7 @@ app.get("/", (req, res) => {
 })
 
 app.use("/admin", validarSesion, verificarAdmin, rutaAdmin)
-
-// app.use("/productos", validarSesion, rutaProductos)
-// app.use("/categorias", validarSesion, rutaCategorias)
-// app.use("/proveedores", validarSesion, rutaProveedores)
-// app.use("/usuarios", validarSesion, verificarAdmin, rutaUsuarios)
-// app.use("/movimientos", validarSesion, rutaMovimientos)
+app.use("/user", validarSesion, rutaUser)
 
 // Login
 app.post(
@@ -72,15 +68,6 @@ app.post(
     }
   }
 )
-
-// Rutas protegidas
-app.get("/admin/home", verificarAdmin, (req, res) => {
-  res.render("adminHome", { user: req.user })
-})
-
-app.get("/user/home", validarSesion, (req, res) => {
-  res.render("userHome", { user: req.user })
-})
 
 // // Logout
 app.get("/log-out", (req, res, next) => {

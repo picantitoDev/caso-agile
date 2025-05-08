@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Carreras Pendientes de Acreditación</title>
+    <title>Mis Solicitudes</title>
     <link rel="stylesheet" href="/userHome.css" />
     <link
       rel="stylesheet"
@@ -12,65 +12,37 @@
   </head>
   <body>
     <header class="header">
-      <h1>Carreras Pendientes de Acreditación</h1>
+      <h1>Solicitudes de Acreditación</h1>
       <div class="user-info">
-        <span><%= user.username %></span>
+        <span><%= user.username %> - <%= user.universidad %></span>
         <a href="/log-out" class="logout-btn">Cerrar sesión</a>
       </div>
     </header>
 
     <div class="container">
       <div class="card">
-        <h2 class="card-title">Listado de Carreras</h2>
-        <p class="card-desc">
-          Selecciona una carrera para gestionar su proceso de acreditación.
-        </p>
-
+        <h2 class="card-title">Carreras Solicitadas</h2>
         <div class="carrera-list">
-          <!-- Carrera 1 -->
+          <% if (solicitudes.length === 0) { %>
+          <p>No tienes solicitudes registradas.</p>
+          <% } %> <% solicitudes.forEach(solicitud => { %>
           <div class="carrera-item">
-            <div class="carrera-name">Ingeniería en Sistemas</div>
+            <div class="carrera-name"><%= solicitud.nombre_carrera %></div>
             <div class="carrera-actions">
-              <span class="status-badge status-pendiente">Pendiente</span>
-              <button class="action-btn">Gestionar</button>
+              <span
+                class="status-badge status-<%= solicitud.estado.toLowerCase() %>"
+              >
+                <%= solicitud.estado %>
+              </span>
+              <form
+                action="/user/solicitudes/<%= solicitud.id_solicitud %>"
+                method="GET"
+              >
+                <button class="action-btn">Gestionar</button>
+              </form>
             </div>
           </div>
-
-          <!-- Carrera 2 -->
-          <div class="carrera-item">
-            <div class="carrera-name">Licenciatura en Administración</div>
-            <div class="carrera-actions">
-              <span class="status-badge status-proceso">En Proceso</span>
-              <button class="action-btn">Gestionar</button>
-            </div>
-          </div>
-
-          <!-- Carrera 3 -->
-          <div class="carrera-item">
-            <div class="carrera-name">Medicina</div>
-            <div class="carrera-actions">
-              <span class="status-badge status-pendiente">Pendiente</span>
-              <button class="action-btn">Gestionar</button>
-            </div>
-          </div>
-
-          <!-- Carrera 4 -->
-          <div class="carrera-item">
-            <div class="carrera-name">Derecho</div>
-            <div class="carrera-actions">
-              <span class="status-badge status-pendiente">Pendiente</span>
-              <button class="action-btn">Gestionar</button>
-            </div>
-          </div>
-
-          <!-- Carrera 5 -->
-          <div class="carrera-item">
-            <div class="carrera-name">Arquitectura</div>
-            <div class="carrera-actions">
-              <span class="status-badge status-proceso">En Proceso</span>
-              <button class="action-btn">Gestionar</button>
-            </div>
-          </div>
+          <% }) %>
         </div>
       </div>
     </div>

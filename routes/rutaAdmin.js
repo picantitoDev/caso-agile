@@ -2,6 +2,10 @@ const express = require("express")
 const router = express.Router()
 const controladorSolicitudes = require("../controllers/controladorSolicitudes")
 
+router.get("/home", (req, res) => {
+  res.render("adminHome", { user: req.user })
+})
+
 router.get("/users", (req, res) => {
   res.render("usuarios")
 })
