@@ -22,4 +22,4 @@ async function insertarUsuario(username, password, role) {
 }
 
 // Ejemplo: crear usuario admin
-insertarUsuario("Admin", "picantito12", "admin")
+insertarUsuario("Prueba", "12345", "user")
