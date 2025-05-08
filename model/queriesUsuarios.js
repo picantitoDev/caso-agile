@@ -9,6 +9,21 @@ const buscarUsuarioPorNombre = async (nombre) => {
   return rows[0] // Devuelve solo un usuario
 }
 
+async function obtenerUsuarioPorUniversidad(universidad) {
+  const query = `
+    SELECT id_usuario FROM usuarios WHERE universidad = $1;
+  `
+  const values = [universidad]
+
+  try {
+    const { rows } = await pool.query(query, values)
+    return rows[0] // Retorna el primer resultado, que es el representante legal
+  } catch (err) {
+    console.error("Error al obtener usuario por universidad:", err)
+    throw err
+  }
+}
+
 // Obtener todos los usuarios
 async function obtenerUsuarios() {
   const { rows } = await pool.query("SELECT * FROM usuarios")
@@ -17,7 +32,7 @@ async function obtenerUsuarios() {
 
 // Buscar usuario por ID
 const buscarUsuarioPorId = async (id) => {
-  const query = "SELECT * FROM usuarios WHERE id = $1"
+  const query = "SELECT * FROM usuarios WHERE id_usuario = $1"
   const values = [id]
 
   const { rows } = await pool.query(query, values)
@@ -41,4 +56,5 @@ module.exports = {
   obtenerUsuarios,
   buscarUsuarioPorId,
   crearUsuario,
+  obtenerUsuarioPorUniversidad,
 }

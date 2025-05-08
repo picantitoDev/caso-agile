@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crear Solicitud</title>
+  </head>
+  <body>
+    <h1>Crear Solicitud de Acreditación</h1>
+
+    <!-- Formulario para crear la solicitud -->
+    <form action="/admin/crear-solicitud" method="POST">
+      <div>
+        <label for="universidad">Seleccione una Universidad:</label>
+        <select id="universidad" name="universidad" required>
+          <option value="">Selecciona una universidad</option>
+          <% usuarios.forEach(function(usuario) { %>
+          <option value="<%= usuario.universidad %>">
+            <%= usuario.universidad %>
+          </option>
+          <% }); %>
+        </select>
+      </div>
+
+      <div>
+        <label for="nombre_carrera">Nombre de la Carrera:</label>
+        <input type="text" id="nombre_carrera" name="nombre_carrera" required />
+      </div>
+
+      <div>
+        <label for="fecha_creacion">Fecha de Creación:</label>
+        <input type="date" id="fecha_creacion" name="fecha_creacion" />
+      </div>
+
+      <button type="submit">Crear Solicitud</button>
+    </form>
+  </body>
+</html>

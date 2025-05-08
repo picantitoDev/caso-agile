@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Creación de Usuario - Proceso en 3 Pasos</title>
+    <link rel="stylesheet" href="/crearUsuario.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="modal-container">
+      <!-- Encabezado del modal: cambia según el paso -->
+      <div class="modal-header">
+        <button
+          class="back-button step-2-element step-3-element"
+          style="display: none"
+        >
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <h2 class="step-1-element">Validar RUC Universitario</h2>
+        <h2 class="step-2-element" style="display: none">Crear Usuario</h2>
+        <h2 class="step-3-element" style="display: none">Creación Exitosa</h2>
+      </div>
+
+      <!-- Contenido del modal -->
+      <div class="modal-content">
+        <!-- Paso 1: Validación de RUC -->
+        <div class="step step-1 active">
+          <div class="form-group">
+            <label for="ruc">RUC de la Universidad</label>
+            <input
+              type="text"
+              id="ruc"
+              class="form-control"
+              placeholder="Ingrese los 11 dígitos del RUC"
+              maxlength="11"
+            />
+          </div>
+
+          <div class="btn-container">
+            <button class="btn btn-secondary" id="cancel-btn-1">
+              Cancelar
+            </button>
+            <button class="btn btn-primary" id="validate-ruc-btn">
+              Validar RUC
+              <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Paso 2: Creación de Usuario -->
+        <div class="step step-2">
+          <div class="university-info">
+            <div class="university-name">
+              Universidad Privada Antenor Orrego - UPAO
+            </div>
+            <div class="university-ruc">RUC: 20131312955</div>
+
+            <div class="legal-reps">
+              <div class="legal-reps-title">REPRESENTANTES LEGALES</div>
+              <div class="legal-rep-item">
+                <i class="fas fa-user"></i>
+                <span>Dr. Antonio Raúl Bocanegra García (Rector)</span>
+              </div>
+              <div class="legal-rep-item">
+                <i class="fas fa-user"></i>
+                <span
+                  >Mg. Carlos Alberto Aiza Barco (Vicerrector Académico)</span
+                >
+              </div>
+              <div class="legal-rep-item">
+                <i class="fas fa-user"></i>
+                <span
+                  >Dra. María Isabel Rodríguez Suárez (Vicerrectora de
+                  Investigación)</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="username">Nombre Completo</label>
+            <input
+              type="text"
+              id="username"
+              class="form-control"
+              placeholder="Ejemplo: Juan Pérez López"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Contraseña Generada</label>
+            <div class="password-container">
+              <input
+                type="text"
+                id="password"
+                class="form-control"
+                value="UP2023@Xy29!"
+                readonly
+              />
+              <div class="password-action">
+                <button class="generate-btn" id="generate-btn">
+                  <i class="fas fa-sync-alt"></i> Generar nueva
+                </button>
+                <button
+                  class="copy-btn"
+                  id="copy-btn"
+                  title="Copiar contraseña"
+                >
+                  <i class="far fa-copy"></i>
+                </button>
+              </div>
+            </div>
+            <div class="password-hint">
+              La contraseña se generará automáticamente
+            </div>
+          </div>
+
+          <div class="btn-container">
+            <button class="btn btn-secondary" id="back-btn-2">Volver</button>
+            <button class="btn btn-success" id="create-user-btn">
+              Crear Usuario
+            </button>
+          </div>
+        </div>
+
+        <!-- Paso 3: Confirmación -->
+        <div class="step step-3">
+          <div class="success-container">
+            <div class="success-icon">
+              <i class="fas fa-check"></i>
+            </div>
+            <h3 class="success-title">¡Usuario creado con éxito!</h3>
+            <p class="success-message">
+              Se ha creado el usuario correctamente y se han enviado las
+              credenciales al correo electrónico.
+            </p>
+
+            <div class="user-info">
+              <div class="user-info-title">Datos del usuario:</div>
+              <ul class="user-info-list">
+                <li>Nombre: María Rodríguez</li>
+                <li>Contraseña: Xk8#pL29qZlm</li>
+              </ul>
+            </div>
+
+            <button class="btn btn-primary" id="back-to-panel-btn">
+              Volver al Panel de Control
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Elementos del DOM
+      const steps = document.querySelectorAll(".step")
+      const backButtons = document.querySelectorAll('[id^="back-btn"]')
+      const validateRucBtn = document.getElementById("validate-ruc-btn")
+      const createUserBtn = document.getElementById("create-user-btn")
+      const backToPanelBtn = document.getElementById("back-to-panel-btn")
+      const generateBtn = document.getElementById("generate-btn")
+      const copyBtn = document.getElementById("copy-btn")
+      const passwordInput = document.getElementById("password")
+      const rucInput = document.getElementById("ruc")
+      const step1Elements = document.querySelectorAll(".step-1-element")
+      const step2Elements = document.querySelectorAll(".step-2-element")
+      const step3Elements = document.querySelectorAll(".step-3-element")
+
+      // Función para mostrar un paso específico
+      function showStep(stepNumber) {
+        // Ocultar todos los pasos
+        steps.forEach((step) => step.classList.remove("active"))
+
+        // Mostrar el paso indicado
+        document.querySelector(`.step-${stepNumber}`).classList.add("active")
+
+        // Ocultar elementos específicos de los pasos
+        ;[step1Elements, step2Elements, step3Elements].forEach(
+          (elements, index) => {
+            elements.forEach((el) => {
+              el.style.display = index + 1 === stepNumber ? "flex" : "none"
+            })
+          }
+        )
+      }
+
+      // Eventos para los botones de navegación
+      validateRucBtn.addEventListener("click", () => {
+        // Aquí iría la lógica de validación del RUC
+        const rucValue = rucInput.value.trim()
+        if (rucValue.length === 11 && !isNaN(rucValue)) {
+          showStep(2)
+        } else {
+          alert("Por favor, ingrese un RUC válido de 11 dígitos.")
+        }
+      })
+
+      createUserBtn.addEventListener("click", () => {
+        // Aquí iría la lógica de creación de usuario
+        showStep(3)
+      })
+
+      backButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const currentStep = parseInt(button.id.split("-")[2])
+          showStep(currentStep - 1)
+        })
+      })
+
+      backToPanelBtn.addEventListener("click", () => {
+        // Redirigir al panel de control (simulado)
+        alert("Redirigiendo al Panel de Control...")
+      })
+
+      // Función para generar contraseña aleatoria
+      generateBtn.addEventListener("click", () => {
+        const chars =
+          "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*"
+        let password = ""
+        for (let i = 0; i < 12; i++) {
+          password += chars.charAt(Math.floor(Math.random() * chars.length))
+        }
+        passwordInput.value = password
+      })
+
+      // Función para copiar la contraseña
+      copyBtn.addEventListener("click", () => {
+        passwordInput.select()
+        document.execCommand("copy")
+
+        // Cambiar el ícono brevemente para dar feedback
+        const originalIcon = copyBtn.innerHTML
+        copyBtn.innerHTML =
+          '<i class="fas fa-check" style="color: #34a853;"></i>'
+        setTimeout(() => {
+          copyBtn.innerHTML = originalIcon
+        }, 1500)
+      })
+
+      // Inicializar el primer paso
+      showStep(1)
+
+      // Validación del input RUC para aceptar solo dígitos
+      rucInput.addEventListener("input", function () {
+        this.value = this.value.replace(/[^0-9]/g, "")
+      })
+    </script>
+  </body>
+</html>

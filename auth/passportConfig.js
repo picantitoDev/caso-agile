@@ -19,11 +19,11 @@ passport.use(
   })
 )
 
-passport.serializeUser((user, done) => done(null, user.id))
+passport.serializeUser((user, done) => done(null, user.id_usuario))
 
-passport.deserializeUser(async (id, done) => {
+passport.deserializeUser(async (id_usuario, done) => {
   try {
-    const user = await dbUsuarios.buscarUsuarioPorId(id)
+    const user = await dbUsuarios.buscarUsuarioPorId(id_usuario)
     done(null, user)
   } catch (err) {
     done(err)

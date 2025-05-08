@@ -12,7 +12,7 @@ const validarSesion = require("./auth/authMiddleware")
 const verificarAdmin = require("./auth/authMiddlewareAdmin")
 
 // Importar rutas
-// const rutaProductos = require("./routes/rutaProductos")
+const rutaAdmin = require("./routes/rutaAdmin")
 
 // Middleware
 app.use(express.json())
@@ -48,6 +48,8 @@ app.use(passport.session())
 app.get("/", (req, res) => {
   res.render("index", { error: req.flash("error") })
 })
+
+app.use("/admin", validarSesion, verificarAdmin, rutaAdmin)
 
 // app.use("/productos", validarSesion, rutaProductos)
 // app.use("/categorias", validarSesion, rutaCategorias)

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Solicitudes de Acreditación</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 2rem;
+      }
+
+      h1 {
+        margin-bottom: 1.5rem;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 0.75rem;
+        text-align: left;
+      }
+
+      th {
+        background-color: #f0f0f0;
+      }
+
+      tr:hover {
+        background-color: #f9f9f9;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Solicitudes de Acreditación</h1>
+
+    <% if (solicitudes.length === 0) { %>
+    <p>No hay solicitudes registradas.</p>
+    <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Universidad</th>
+          <th>Representante</th>
+          <th>Carrera</th>
+          <th>Fecha de Creación</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% solicitudes.forEach((solicitud, index) => { %>
+        <tr>
+          <td><%= index + 1 %></td>
+          <td><%= solicitud.universidad %></td>
+          <td><%= solicitud.username %></td>
+          <td><%= solicitud.nombre_carrera %></td>
+          <td>
+            <%= solicitud.fecha_creacion ?
+            solicitud.fecha_creacion.toLocaleDateString() : "Sin fecha" %>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <% } %>
+  </body>
+</html>
