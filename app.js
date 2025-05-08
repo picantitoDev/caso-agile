@@ -7,9 +7,9 @@ const passport = require("passport")
 const flash = require("connect-flash")
 
 // Configurar passport
-// require("./auth/passportConfig")
-// const validarSesion = require("./auth/authMiddleware")
-// const verificarAdmin = require("./auth/authMiddlewareAdmin")
+require("./auth/passportConfig")
+const validarSesion = require("./auth/authMiddleware")
+const verificarAdmin = require("./auth/authMiddlewareAdmin")
 
 // Importar rutas
 // const rutaProductos = require("./routes/rutaProductos")
@@ -22,32 +22,31 @@ app.use(express.urlencoded({ extended: true }))
 app.use(methodOverride("_method"))
 
 // Configurar sesión
-// app.use(
-//   session({
-//     secret: "clave_super_secreta",
-//     resave: false,
-//     saveUninitialized: false,
-//   })
-// )
+app.use(
+  session({
+    secret: "clave_super_secreta",
+    resave: false,
+    saveUninitialized: false,
+  })
+)
 
-// app.use(flash())
+app.use(flash())
 
 // Hacer disponibles los mensajes flash en todas las vistas
-// app.use((req, res, next) => {
-//   res.locals.success_msg = req.flash("success_msg")
-//   res.locals.error_msg = req.flash("error_msg")
-//   res.locals.error = req.flash("error") // Passport usa 'error' por defecto
-//   next()
-// })
+app.use((req, res, next) => {
+  res.locals.success_msg = req.flash("success_msg")
+  res.locals.error_msg = req.flash("error_msg")
+  res.locals.error = req.flash("error") // Passport usa 'error' por defecto
+  next()
+})
 
 // Inicializar passport y sesiones
-// app.use(passport.initialize())
-// app.use(passport.session())
+app.use(passport.initialize())
+app.use(passport.session())
 
 // Rutas principales
 app.get("/", (req, res) => {
-  res.send("nice")
-  // res.render("index", { user: req.user })
+  res.render("index", { error: req.flash("error") })
 })
 
 // app.use("/productos", validarSesion, rutaProductos)
@@ -57,24 +56,39 @@ app.get("/", (req, res) => {
 // app.use("/movimientos", validarSesion, rutaMovimientos)
 
 // Login
-// app.post(
-//   "/log-in",
-//   passport.authenticate("local", {
-//     successRedirect: "/",
-//     failureRedirect: "/",
-//     failureFlash: true,
-//   })
-// )
+app.post(
+  "/log-in",
+  passport.authenticate("local", {
+    failureRedirect: "/",
+    failureFlash: true,
+  }),
+  (req, res) => {
+    if (req.user.rol === "Admin") {
+      return res.redirect("/admin/home")
+    } else {
+      return res.redirect("/user/home")
+    }
+  }
+)
+
+// Rutas protegidas
+app.get("/admin/home", verificarAdmin, (req, res) => {
+  res.render("adminHome", { user: req.user })
+})
+
+app.get("/user/home", validarSesion, (req, res) => {
+  res.render("userHome", { user: req.user })
+})
 
 // // Logout
-// app.get("/log-out", (req, res, next) => {
-//   req.logout((err) => {
-//     if (err) {
-//       return next(err)
-//     }
-//     res.redirect("/")
-//   })
-// })
+app.get("/log-out", (req, res, next) => {
+  req.logout((err) => {
+    if (err) {
+      return next(err)
+    }
+    res.redirect("/")
+  })
+})
 
 // Middleware para manejar errores 404
 app.use((req, res, next) => {
