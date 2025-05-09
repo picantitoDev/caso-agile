@@ -290,6 +290,45 @@
         }, 1500)
       })
 
+      createUserBtn.addEventListener("click", async () => {
+        const username = document.getElementById("username").value.trim()
+        const password = document.getElementById("password").value.trim()
+        const ruc = document.getElementById("ruc").value.trim()
+        const universidad = document
+          .getElementById("university-name")
+          .textContent.trim()
+
+        if (!username || !password || !universidad || !ruc) {
+          return alert("Por favor, complete todos los campos.")
+        }
+
+        try {
+          const response = await fetch("/admin/users/crear-usuario", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              username,
+              password,
+              rol: "representante", // Esto lo recibe el backend como `rol`
+              universidad,
+              ruc,
+            }),
+          })
+
+          if (response.ok) {
+            showStep(3)
+          } else {
+            const errorText = await response.text()
+            alert("Error al crear el usuario: " + errorText)
+          }
+        } catch (error) {
+          console.error("Error al enviar datos:", error)
+          alert("Error inesperado al crear usuario.")
+        }
+      })
+
       // Inicializar el primer paso
       showStep(1)
 

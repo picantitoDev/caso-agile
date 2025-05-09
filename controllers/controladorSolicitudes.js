@@ -55,21 +55,13 @@ async function gestionSolicitudesGet(req, res) {
 
 async function verSolicitudesUsuario(req, res) {
   try {
-    const solicitudes = await dbSolicitudes.obtenerSolicitudes() // Obtener las solicitudes desde la base de datos
+    const idUsuario = req.user.id_usuario // Suponiendo que estás usando Passport.js y el usuario está autenticado
+    const solicitudes = await dbSolicitudes.obtenerSolicitudesPorUsuario(
+      idUsuario
+    )
+    //const solicitudes = await dbSolicitudes.obtenerSolicitudes() // Obtener las solicitudes desde la base de datos
 
     const solicitudesConDiferencia = solicitudes.map((solicitud) => {
-      // // Convierte la fecha de creación de la solicitud a Luxon y la ajusta a la zona horaria de Lima
-      // const fechaCreacion = DateTime.fromJSDate(
-      //   solicitud.fecha_creacion
-      // ).setZone("America/Lima")
-      // const hoy = DateTime.now().setZone("America/Lima")
-
-      // // Calculamos la diferencia entre las fechas en minutos
-      // const diferenciaMinutos = hoy.diff(fechaCreacion, "minutes").minutes
-
-      // // Verificamos si han pasado 3 minutos o más
-      // const vencida = diferenciaMinutos >= 3
-
       const fechaCreacion = DateTime.fromJSDate(
         new Date(solicitud.fecha_creacion)
       ).setZone("America/Lima")

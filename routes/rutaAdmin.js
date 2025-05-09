@@ -28,5 +28,6 @@ router.get(
 )
 
 router.post("/users/crear-usuario/validar-ruc", controladorUsuarios.validarRuc)
+router.post("/users/crear-usuario", controladorUsuarios.crearUsuarioPost)
 
 module.exports = router

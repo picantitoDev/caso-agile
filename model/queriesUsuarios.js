@@ -48,15 +48,13 @@ async function insertarUsuario({
   ruc = null,
 }) {
   try {
-    const hashedPassword = await bcrypt.hash(password, 10)
-
     const query = `
       INSERT INTO usuarios (username, password, role, universidad, ruc)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *;
     `
 
-    const values = [username, hashedPassword, role, universidad, ruc]
+    const values = [username, password, role, universidad, ruc]
 
     const { rows } = await pool.query(query, values)
     console.log("Usuario creado:", rows[0])

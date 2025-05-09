@@ -13,15 +13,14 @@ async function crearUsuarioGet(req, res) {
 
 const crearUsuarioPost = async (req, res, next) => {
   try {
-    const { username, password, email, rol, universidad, ruc } = req.body
+    const { username, password, rol, universidad, ruc } = req.body
     console.log(username)
     console.log(password)
-    console.log(email)
     console.log(universidad)
     console.log(ruc)
 
     // Validación simple
-    if (!username || !password || !email || !rol) {
+    if (!username || !password || !rol) {
       return res.status(400).send("Faltan campos obligatorios.")
     }
 
@@ -30,12 +29,6 @@ const crearUsuarioPost = async (req, res, next) => {
     if (usuarioExistente) {
       return res.status(409).send("El nombre de usuario ya está en uso.")
     }
-
-    const emailExistente = await dbUsuarios.buscarUsuarioPorEmail(email)
-    if (emailExistente) {
-      return res.status(409).send("El correo electrónico ya está en uso.")
-    }
-
     // Encripta la contraseña
     const hashedPassword = await bcrypt.hash(password, 10)
 
@@ -47,7 +40,6 @@ const crearUsuarioPost = async (req, res, next) => {
       universidad, // Puedes pasar el ID de la universidad si es necesario
       ruc, // Pasas el RUC si es necesario
     })
-    res.redirect("/usuarios")
   } catch (error) {
     next(error)
   }

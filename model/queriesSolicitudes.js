@@ -42,19 +42,16 @@ async function obtenerSolicitudes() {
   return rows
 }
 
-async function obtenerSolicitudesPorUsuario(id_usuario) {
+async function obtenerSolicitudesPorUsuario(idUsuario) {
   const query = `
-    SELECT 
-      id_solicitud,
-      nombre_carrera,
-      nombre_universidad,
-      estado,
-      fecha_creacion
-    FROM solicitud_acreditacion
-    WHERE id_usuario = $1
-    ORDER BY fecha_creacion DESC;
+    SELECT s.id_solicitud, s.nombre_carrera, s.fecha_creacion, s.estado,
+           u.username, u.universidad
+    FROM solicitud_acreditacion s
+    JOIN usuarios u ON s.id_usuario = u.id_usuario
+    WHERE s.id_usuario = $1
+    ORDER BY s.fecha_creacion DESC;
   `
-  const { rows } = await pool.query(query, [id_usuario])
+  const { rows } = await pool.query(query, [idUsuario])
   return rows
 }
 
