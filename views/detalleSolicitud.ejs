@@ -174,15 +174,36 @@
       document
         .getElementById("formulario")
         .addEventListener("submit", function (e) {
-          const hayArchivos = Array.from(
-            document.querySelectorAll(".input-archivos")
-          ).some((input) => input.files.length > 0)
+          const inputs = document.querySelectorAll(".input-archivos")
+          let hayArchivos = false
+          let archivosInvalidos = false
+
+          inputs.forEach((input) => {
+            const files = Array.from(input.files)
+
+            if (files.length > 0) {
+              hayArchivos = true
+
+              files.forEach((file) => {
+                if (file.type !== "application/pdf") {
+                  archivosInvalidos = true
+                }
+              })
+            }
+          })
 
           if (!hayArchivos) {
             e.preventDefault()
             alert(
               "Debes subir al menos un archivo antes de guardar los cambios."
             )
+            return
+          }
+
+          if (archivosInvalidos) {
+            e.preventDefault()
+            alert("Solo se permiten archivos PDF.")
+            return
           }
         })
     </script>
