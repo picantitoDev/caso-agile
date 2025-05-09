@@ -1,5 +1,6 @@
 const dbUsuarios = require("../model/queriesUsuarios")
 const dbSolicitudes = require("../model/queriesSolicitudes")
+const { DateTime } = require("luxon")
 
 async function crearSolicitudGet(req, res) {
   try {
@@ -23,12 +24,18 @@ async function crearSolicitudPost(req, res) {
         .send("No se encontró un representante para esta universidad.")
     }
 
+    const fechaFinal = fecha_creacion
+      ? DateTime.fromISO(fecha_creacion, { zone: "utc" })
+          .toUTC()
+          .toFormat("yyyy-MM-dd HH:mm:ss")
+      : DateTime.now().setZone("America/Lima").toFormat("yyyy-MM-dd HH:mm:ss")
+
     // Crear la solicitud en la base de datos
     const nuevaSolicitud = await dbSolicitudes.crearSolicitud(
       usuario.id_usuario, // Usamos el id_usuario del representante legal
       universidad,
       nombre_carrera,
-      fecha_creacion
+      fechaFinal
     )
     res.redirect("/admin/home")
   } catch (error) {
@@ -50,17 +57,38 @@ async function gestionSolicitudesGet(req, res) {
 
 async function verSolicitudesUsuario(req, res) {
   try {
-    const solicitudes = await dbSolicitudes.obtenerSolicitudesPorUsuario(
-      req.user.id_usuario
-    )
+    const solicitudes = await dbSolicitudes.obtenerSolicitudes() // Obtener las solicitudes desde la base de datos
+
+    const solicitudesConDiferencia = solicitudes.map((solicitud) => {
+      // Convierte la fecha de creación de la solicitud a Luxon y la ajusta a la zona horaria de Lima
+      const fechaCreacion = DateTime.fromJSDate(
+        solicitud.fecha_creacion
+      ).setZone("America/Lima")
+      const hoy = DateTime.now().setZone("America/Lima")
+
+      // Calculamos la diferencia entre las fechas en minutos
+      const diferenciaMinutos = hoy.diff(fechaCreacion, "minutes").minutes
+
+      // Verificamos si han pasado 3 minutos o más
+      const vencida = diferenciaMinutos >= 1
+
+      return {
+        ...solicitud,
+        fechaCreacion: fechaCreacion.toISO(), // Pasamos la fecha procesada a la vista
+        vencida,
+      }
+    })
+
+    // Verifica las fechas que pasas a la vista
+    console.log("Solicitudes con fechas procesadas:", solicitudesConDiferencia)
 
     res.render("userHome", {
+      solicitudes: solicitudesConDiferencia,
       user: req.user,
-      solicitudes,
     })
   } catch (error) {
-    console.error("Error al obtener solicitudes del usuario:", error)
-    res.status(500).send("Error al cargar solicitudes")
+    console.error("Error al obtener solicitudes:", error)
+    res.status(500).send("Error al obtener solicitudes")
   }
 }
 
