@@ -1,6 +1,7 @@
 const express = require("express")
 const router = express.Router()
 const controladorSolicitudes = require("../controllers/controladorSolicitudes")
+const controladorUsuarios = require("../controllers/controladorUsuarios")
 
 router.get("/home", (req, res) => {
   res.render("adminHome", { user: req.user })
@@ -25,5 +26,7 @@ router.get(
   "/descargar-archivo/:id_archivo",
   controladorSolicitudes.descargarArchivo
 )
+
+router.post("/users/crear-usuario/validar-ruc", controladorUsuarios.validarRuc)
 
 module.exports = router

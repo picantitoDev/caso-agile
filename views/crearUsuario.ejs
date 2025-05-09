@@ -188,14 +188,51 @@
         )
       }
 
-      // Eventos para los botones de navegación
+      // Función para validar el RUC mediante la API
+      const validateRuc = async (rucValue) => {
+        try {
+          console.log("Enviando RUC:", rucValue) // Verificar el valor de RUC
+          const response = await fetch(
+            "/admin/users/crear-usuario/validar-ruc",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ ruc: rucValue }),
+            }
+          )
+
+          // Verificar si la respuesta fue exitosa
+          if (!response.ok) {
+            const errorText = await response.text()
+            console.error("Error en la respuesta:", errorText)
+            return alert("Error al validar el RUC")
+          }
+
+          const data = await response.json()
+          console.log("Respuesta de la API:", data)
+
+          if (data.valido) {
+            showStep(2) // Pasar al paso 2 si el RUC es válido
+          } else {
+            alert(data.error || "RUC inválido")
+            rucInput.value = "" // Limpiar el campo de RUC
+          }
+        } catch (error) {
+          console.error("Error al validar el RUC:", error)
+          alert("Error al validar el RUC")
+          rucInput.value = "" // Limpiar el campo de RUC
+        }
+      }
+      // Evento para validar el RUC cuando se hace clic en "Validar RUC"
       validateRucBtn.addEventListener("click", () => {
-        // Aquí iría la lógica de validación del RUC
         const rucValue = rucInput.value.trim()
         if (rucValue.length === 11 && !isNaN(rucValue)) {
-          showStep(2)
+          validateRuc(rucValue)
         } else {
           alert("Por favor, ingrese un RUC válido de 11 dígitos.")
+          rucInput.value = "" // Limpiar el campo de RUC
         }
       })
 
