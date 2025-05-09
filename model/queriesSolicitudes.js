@@ -128,6 +128,11 @@ async function obtenerArchivoPorId(id_archivo) {
   return result.rows[0]
 }
 
+async function eliminarArchivoPorId(id_archivo) {
+  const query = `DELETE FROM archivo_seccion WHERE id_archivo = $1`
+  await pool.query(query, [id_archivo])
+}
+
 module.exports = {
   obtenerSecciones,
   obtenerArchivosPorSolicitud,
@@ -138,4 +143,5 @@ module.exports = {
   obtenerSolicitudPorId,
   obtenerArchivosPorSolicitudAdmin,
   obtenerArchivoPorId,
+  eliminarArchivoPorId,
 }

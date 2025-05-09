@@ -20,5 +20,9 @@ router.post(
   ]),
   controladorSolicitudes.guardarCambios
 )
+router.post(
+  "/solicitudes/:id/eliminar-archivo/:idArchivo",
+  controladorSolicitudes.eliminarArchivo
+)
 
 module.exports = router

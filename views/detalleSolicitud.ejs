@@ -65,7 +65,16 @@
             <h3>Archivos subidos:</h3>
             <ul>
               <% archivosSeccion.archivos.forEach(archivo => { %>
-              <li><%= archivo.nombre_archivo %></li>
+              <li>
+                <%= archivo.nombre_archivo %>
+                <button
+                  type="button"
+                  class="btn-eliminar"
+                  onclick="eliminarArchivo(`<%= archivo.id_archivo %>`)"
+                >
+                  Eliminar
+                </button>
+              </li>
               <% }) %>
             </ul>
           </div>
@@ -138,6 +147,29 @@
           })
         })
       })
+
+      function eliminarArchivo(idArchivo) {
+        if (!confirm("¿Estás seguro de que deseas eliminar este archivo?"))
+          return
+
+        fetch(
+          `/user/solicitudes/<%= solicitudId %>/eliminar-archivo/${idArchivo}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        )
+          .then((res) => {
+            if (!res.ok) throw new Error("Error al eliminar el archivo.")
+            location.reload()
+          })
+          .catch((err) => {
+            console.error(err)
+            alert("Ocurrió un error al eliminar el archivo.")
+          })
+      }
     </script>
   </body>
 </html>

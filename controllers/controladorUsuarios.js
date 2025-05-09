@@ -46,7 +46,6 @@ const crearUsuarioPost = async (req, res, next) => {
 const obtenerUsuarios = async (req, res) => {
   try {
     const todosLosUsuarios = await dbUsuarios.obtenerUsuarios()
-    console.log(todosLosUsuarios)
     // Filtrar solo los representantes
     const representantes = todosLosUsuarios.filter(
       (usuario) => usuario.role === "representante"

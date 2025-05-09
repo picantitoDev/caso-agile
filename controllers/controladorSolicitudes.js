@@ -76,14 +76,6 @@ async function verSolicitudesUsuario(req, res) {
       // Calcular la diferencia en días
       const diferenciaDias = hoy.diff(fechaCreacion, "days").days
       const vencida = diferenciaDias >= 30
-      console.log(`Diferencia de días: ${diferenciaDias}`)
-      console.log(`¿La fecha está vencida? ${vencida ? "Sí" : "No"}`)
-
-      console.log("Hora actual servidor (UTC):", new Date().toISOString())
-      console.log(
-        "Hora actual Lima (Luxon):",
-        DateTime.now().setZone("America/Lima").toISO()
-      )
 
       return {
         ...solicitud,
@@ -91,9 +83,6 @@ async function verSolicitudesUsuario(req, res) {
         vencida,
       }
     })
-
-    // Verifica las fechas que pasas a la vista
-    console.log("Solicitudes con fechas procesadas:", solicitudesConDiferencia)
 
     res.render("userHome", {
       solicitudes: solicitudesConDiferencia,
@@ -243,6 +232,17 @@ async function descargarArchivo(req, res) {
   }
 }
 
+async function eliminarArchivo(req, res) {
+  const { id, idArchivo } = req.params
+  try {
+    await dbSolicitudes.eliminarArchivoPorId(idArchivo)
+    res.redirect(`/user/home/`) // Redirige a la misma solicitud
+  } catch (error) {
+    console.error("Error al eliminar archivo:", error)
+    res.status(500).send("Error al eliminar archivo")
+  }
+}
+
 module.exports = {
   crearSolicitudGet,
   crearSolicitudPost,
@@ -252,4 +252,5 @@ module.exports = {
   guardarCambios,
   gestionDetalleSolicitudGet,
   descargarArchivo,
+  eliminarArchivo,
 }
