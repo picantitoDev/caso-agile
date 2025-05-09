@@ -25,10 +25,8 @@ async function crearSolicitudPost(req, res) {
     }
 
     const fechaFinal = fecha_creacion
-      ? DateTime.fromISO(fecha_creacion, { zone: "utc" })
-          .toUTC()
-          .toFormat("yyyy-MM-dd HH:mm:ss")
-      : DateTime.now().setZone("America/Lima").toFormat("yyyy-MM-dd HH:mm:ss")
+      ? DateTime.fromISO(fecha_creacion, { zone: "utc" }).toUTC().toISO()
+      : DateTime.now().setZone("America/Lima").toUTC().toISO()
 
     // Crear la solicitud en la base de datos
     const nuevaSolicitud = await dbSolicitudes.crearSolicitud(
