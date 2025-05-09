@@ -9,6 +9,15 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     />
+
+    <style>
+.action-btn.vencida {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+  border: 1px solid #aaa;
+}
+    </style>
   </head>
   <body>
     <header class="header">
@@ -24,24 +33,31 @@
         <h2 class="card-title">Carreras Solicitadas</h2>
         <div class="carrera-list">
           <% if (solicitudes.length === 0) { %>
-          <p>No tienes solicitudes registradas.</p>
-          <% } %> <% solicitudes.forEach(solicitud => { %>
-          <div class="carrera-item">
-            <div class="carrera-name"><%= solicitud.nombre_carrera %></div>
-            <div class="carrera-actions">
-              <span
-                class="status-badge status-<%= solicitud.estado.toLowerCase() %>"
-              >
-                <%= solicitud.estado %>
-              </span>
-              <form
-                action="/user/solicitudes/<%= solicitud.id_solicitud %>"
-                method="GET"
-              >
-                <button class="action-btn">Gestionar</button>
-              </form>
+            <p>No tienes solicitudes registradas.</p>
+          <% } %>
+
+          <% solicitudes.forEach(solicitud => {
+            const fechaCreacion = new Date(solicitud.fecha_creacion);
+            const hoy = new Date();
+            const diferenciaDias = Math.floor((hoy - fechaCreacion) / (1000 * 60 * 60 * 24));
+            const vencida = diferenciaDias >= 30;
+          %>
+            <div class="carrera-item">
+              <div class="carrera-name"><%= solicitud.nombre_carrera %></div>
+              <div class="carrera-actions">
+                <span class="status-badge status-<%= solicitud.estado.toLowerCase() %>">
+                  <%= solicitud.estado %>
+                </span>
+                <form
+                  action="/user/solicitudes/<%= solicitud.id_solicitud %>"
+                  method="GET"
+                >
+                <button class="action-btn <%= vencida ? 'vencida' : '' %>" <%= vencida ? 'disabled title="Esta solicitud ha vencido (más de 30 días)"' : '' %>>
+                  Gestionar
+                </button>
+                </form>
+              </div>
             </div>
-          </div>
           <% }) %>
         </div>
       </div>

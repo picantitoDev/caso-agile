@@ -53,6 +53,7 @@ async function verSolicitudesUsuario(req, res) {
     const solicitudes = await dbSolicitudes.obtenerSolicitudesPorUsuario(
       req.user.id_usuario
     )
+
     res.render("userHome", {
       user: req.user,
       solicitudes,
