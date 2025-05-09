@@ -7,14 +7,15 @@
   </head>
   <body>
     <header>
+      <a class="back-btn" href="/admin/solicitudes">← Atrás</a>
       <h1>Detalle de Solicitud</h1>
       <div class="info-solicitud">
         <p><strong>Universidad:</strong> <%= solicitud.nombre_universidad %></p>
-        <p><strong>Representante:</strong> <%= solicitud.username %></p>
         <p><strong>Carrera:</strong> <%= solicitud.nombre_carrera %></p>
         <p>
-          <strong>Fecha de Creación:</strong> <%=
-          solicitud.fecha_creacion.toLocaleDateString() %>
+          <strong>Fecha de Creación:</strong>
+          <%= new Date(solicitud.fecha_creacion).toLocaleDateString('es-PE', {
+          day: '2-digit', month: '2-digit', year: 'numeric' }) %>
         </p>
       </div>
     </header>
