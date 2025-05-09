@@ -70,7 +70,7 @@ async function verSolicitudesUsuario(req, res) {
       const diferenciaMinutos = hoy.diff(fechaCreacion, "minutes").minutes
 
       // Verificamos si han pasado 3 minutos o más
-      const vencida = diferenciaMinutos >= 1
+      const vencida = diferenciaMinutos >= 3
 
       return {
         ...solicitud,
