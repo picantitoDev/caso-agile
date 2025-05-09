@@ -4,12 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Crear Solicitud</title>
+    <link rel="stylesheet" href="/crearSolicitud.css" />
   </head>
   <body>
-    <h1>Crear Solicitud de Acreditación</h1>
-
     <!-- Formulario para crear la solicitud -->
     <form action="/admin/crear-solicitud" method="POST">
+      <a class="back-btn" href="/admin/home">← Atrás</a>
+      <h1 style="color: black">Crear Solicitud de Acreditación</h1>
       <div>
         <label for="universidad">Seleccione una Universidad:</label>
         <select id="universidad" name="universidad" required>

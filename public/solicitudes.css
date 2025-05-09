@@ -60,3 +60,14 @@ tr:hover {
   margin-top: 20px;
   font-style: italic;
 }
+
+.back-btn {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+}
