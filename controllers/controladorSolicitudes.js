@@ -78,9 +78,9 @@ async function verSolicitudesUsuario(req, res) {
 
       // Calcular la diferencia en días
       const diferenciaDias = hoy.diff(fechaCreacion, "days").days
-
-      // Verificar si la diferencia es mayor o igual a 30 días
       const vencida = diferenciaDias >= 30
+      console.log(`Diferencia de días: ${diferenciaDias}`)
+      console.log(`¿La fecha está vencida? ${vencida ? "Sí" : "No"}`)
 
       console.log("Hora actual servidor (UTC):", new Date().toISOString())
       console.log(
