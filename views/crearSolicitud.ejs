@@ -6,9 +6,19 @@
     <title>Crear Solicitud</title>
     <link rel="stylesheet" href="/crearSolicitud.css" />
   </head>
+  <style>
+    .error-text {
+      color: red;
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
   <body>
     <!-- Formulario para crear la solicitud -->
-    <form action="/admin/crear-solicitud" method="POST">
+    <form action="/admin/crear-solicitud" method="POST" id="formulario">
       <a class="back-btn" href="/admin/home">← Atrás</a>
       <h1 style="color: black">Crear Solicitud de Acreditación</h1>
       <div>
@@ -22,18 +32,98 @@
           <% }); %>
         </select>
       </div>
-
       <div>
         <label for="nombre_carrera">Nombre de la Carrera:</label>
         <input type="text" id="nombre_carrera" name="nombre_carrera" required />
+        <p id="error-carrera" class="error-text hidden"></p>
       </div>
-
       <div>
         <label for="fecha_creacion">Fecha de Creación:</label>
         <input type="date" id="fecha_creacion" name="fecha_creacion" />
       </div>
-
-      <button type="submit">Crear Solicitud</button>
+      <button type="submit" id="submitBtn">Crear Solicitud</button>
     </form>
+
+    <!-- Script de validación -->
+    <script id="solicitudes-data" type="application/json">
+      <%- JSON.stringify(solicitudes) %>
+    </script>
+    <script>
+      const solicitudes = JSON.parse(
+        document.getElementById("solicitudes-data").textContent
+      )
+
+      const universidadInput = document.getElementById("universidad")
+      const carreraInput = document.getElementById("nombre_carrera")
+      const submitBtn = document.getElementById("submitBtn")
+      const formulario = document.getElementById("formulario")
+
+      // Variable para rastrear si el usuario ha interactuado con los campos
+      let universidadTouched = false
+      let carreraTouched = false
+
+      function validarFormulario() {
+        // Solo validar si el usuario ha interactuado con los campos
+        if (!universidadTouched && !carreraTouched) {
+          return
+        }
+
+        const universidad = universidadInput.value.trim().toLowerCase()
+        const carrera = carreraInput.value.trim().toLowerCase()
+        const errorMsg = document.getElementById("error-carrera")
+
+        const esDuplicado = solicitudes.some(
+          (s) =>
+            s.universidad.toLowerCase() === universidad &&
+            s.nombre_carrera.toLowerCase() === carrera
+        )
+
+        if (!carrera && carreraTouched) {
+          carreraInput.style.border = "2px solid red"
+          errorMsg.textContent = "Este campo no puede estar vacío."
+          errorMsg.classList.remove("hidden")
+          submitBtn.disabled = true
+        } else if (esDuplicado) {
+          carreraInput.style.border = "2px solid red"
+          errorMsg.textContent =
+            "Ya existe una solicitud con ese nombre en esta universidad."
+          errorMsg.classList.remove("hidden")
+          submitBtn.disabled = true
+        } else {
+          carreraInput.style.border = ""
+          errorMsg.textContent = ""
+          errorMsg.classList.add("hidden")
+          submitBtn.disabled = false
+        }
+      }
+
+      // Marcar campos como "tocados" cuando el usuario interactúa con ellos
+      universidadInput.addEventListener("change", function () {
+        universidadTouched = true
+        validarFormulario()
+      })
+
+      carreraInput.addEventListener("input", function () {
+        carreraTouched = true
+        validarFormulario()
+      })
+
+      // Validar el formulario cuando se intenta enviar
+      formulario.addEventListener("submit", function (event) {
+        universidadTouched = true
+        carreraTouched = true
+        validarFormulario()
+
+        if (submitBtn.disabled) {
+          event.preventDefault()
+        } else {
+          // Cambiar el texto del botón y deshabilitarlo
+          submitBtn.textContent = "Registrando..."
+          submitBtn.disabled = true
+          submitBtn.style.opacity = "0.7"
+          submitBtn.style.cursor = "not-allowed"
+        }
+      })
+    </script>
   </body>
 </html>

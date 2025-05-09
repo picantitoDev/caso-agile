@@ -10,7 +10,9 @@ async function crearSolicitudGet(req, res) {
       (usuario) => usuario.role === "representante"
     )
 
-    res.render("crearSolicitud", { usuarios: representantes })
+    const solicitudes = await dbSolicitudes.obtenerSolicitudes()
+
+    res.render("crearSolicitud", { usuarios: representantes, solicitudes })
   } catch (error) {
     console.error("Error al cargar formulario:", error)
     res.status(500).send("Error al cargar formulario")
@@ -32,6 +34,21 @@ async function crearSolicitudPost(req, res) {
     const fechaFinal = fecha_creacion
       ? DateTime.fromISO(fecha_creacion, { zone: "utc" }).toUTC().toISO()
       : DateTime.now().setZone("America/Lima").toUTC().toISO()
+
+    const solicitudes = await dbSolicitudes.obtenerSolicitudes()
+
+    // Verificar si ya existe una solicitud con la misma universidad y carrera (case-insensitive)
+    const existe = solicitudes.some(
+      (s) =>
+        s.universidad.toLowerCase() === universidad.toLowerCase() &&
+        s.nombre_carrera.toLowerCase() === nombre_carrera.toLowerCase()
+    )
+
+    if (existe) {
+      return res
+        .status(400)
+        .send("Ya existe una solicitud para esta carrera en esa universidad.")
+    }
 
     // Crear la solicitud en la base de datos
     const nuevaSolicitud = await dbSolicitudes.crearSolicitud(
