@@ -170,6 +170,21 @@
             alert("Ocurrió un error al eliminar el archivo.")
           })
       }
+
+      document
+        .getElementById("formulario")
+        .addEventListener("submit", function (e) {
+          const hayArchivos = Array.from(
+            document.querySelectorAll(".input-archivos")
+          ).some((input) => input.files.length > 0)
+
+          if (!hayArchivos) {
+            e.preventDefault()
+            alert(
+              "Debes subir al menos un archivo antes de guardar los cambios."
+            )
+          }
+        })
     </script>
   </body>
 </html>
