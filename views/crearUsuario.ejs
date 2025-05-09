@@ -54,29 +54,13 @@
         <!-- Paso 2: Creación de Usuario -->
         <div class="step step-2">
           <div class="university-info">
-            <div class="university-name">
-              Universidad Privada Antenor Orrego - UPAO
-            </div>
-            <div class="university-ruc">RUC: 20131312955</div>
+            <div class="university-name" id="university-name"></div>
+            <div class="university-ruc" id="university-ruc"></div>
 
-            <div class="legal-reps">
+            <div class="legal-reps" id="legal-reps-container">
               <div class="legal-reps-title">REPRESENTANTES LEGALES</div>
-              <div class="legal-rep-item">
-                <i class="fas fa-user"></i>
-                <span>Dr. Antonio Raúl Bocanegra García (Rector)</span>
-              </div>
-              <div class="legal-rep-item">
-                <i class="fas fa-user"></i>
-                <span
-                  >Mg. Carlos Alberto Aiza Barco (Vicerrector Académico)</span
-                >
-              </div>
-              <div class="legal-rep-item">
-                <i class="fas fa-user"></i>
-                <span
-                  >Dra. María Isabel Rodríguez Suárez (Vicerrectora de
-                  Investigación)</span
-                >
+              <div id="legal-reps-list">
+                <!-- Aquí se inyectarán los representantes -->
               </div>
             </div>
           </div>
@@ -214,10 +198,38 @@
           console.log("Respuesta de la API:", data)
 
           if (data.valido) {
-            showStep(2) // Pasar al paso 2 si el RUC es válido
+            // Llenar nombre y RUC de la universidad
+            document.getElementById("university-name").textContent =
+              data.razon_social || "Nombre no disponible"
+            document.getElementById(
+              "university-ruc"
+            ).textContent = `RUC: ${data.representantes[0].ruc}`
+
+            // Contenedor de representantes
+            const legalRepsList = document.getElementById("legal-reps-list")
+            legalRepsList.innerHTML = "" // Limpiar anteriores
+
+            if (
+              Array.isArray(data.representantes) &&
+              data.representantes.length > 0
+            ) {
+              data.representantes.forEach((rep) => {
+                const div = document.createElement("div")
+                div.classList.add("legal-rep-item")
+                div.innerHTML = `<i class="fas fa-user"></i><span>${rep.nombre} (${rep.cargo})</span>`
+                legalRepsList.appendChild(div)
+              })
+            } else {
+              const noRep = document.createElement("div")
+              noRep.classList.add("legal-rep-item")
+              noRep.textContent = "No se encontraron representantes legales."
+              legalRepsList.appendChild(noRep)
+            }
+
+            showStep(2) // Pasar al paso 2
           } else {
             alert(data.error || "RUC inválido")
-            rucInput.value = "" // Limpiar el campo de RUC
+            rucInput.value = ""
           }
         } catch (error) {
           console.error("Error al validar el RUC:", error)

@@ -72,7 +72,27 @@ const validarRuc = async (req, res) => {
   }
 
   try {
-    const response = await fetch(
+    // 1. Consultar razón social
+    const razonSocialResponse = await fetch("https://api.migo.pe/api/v1/ruc", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        token: process.env.SUNAT_TOKEN,
+        ruc: ruc,
+      }),
+    })
+
+    if (!razonSocialResponse.ok) {
+      throw new Error(`Error en razón social: ${razonSocialResponse.status}`)
+    }
+
+    const razonSocialData = await razonSocialResponse.json()
+
+    // 2. Consultar representantes legales
+    const repsResponse = await fetch(
       "https://api.migo.pe/api/v1/ruc/representantes-legales",
       {
         method: "POST",
@@ -87,18 +107,28 @@ const validarRuc = async (req, res) => {
       }
     )
 
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`)
+    if (!repsResponse.ok) {
+      throw new Error(`Error en representantes legales: ${repsResponse.status}`)
     }
 
-    const data = await response.json()
+    const repsData = await repsResponse.json()
 
-    console.log("Respuesta completa de la API:", data) // Ver lo que devuelve la API
+    console.log("Razón social:", razonSocialData)
+    console.log("Representantes legales:", repsData)
 
-    if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-      return res.status(200).send({ valido: true, representantes: data.data })
+    if (
+      razonSocialData.success &&
+      repsData.success &&
+      Array.isArray(repsData.data)
+    ) {
+      return res.status(200).send({
+        valido: true,
+        ruc,
+        razon_social: razonSocialData.nombre_o_razon_social || "",
+        representantes: repsData.data,
+      })
     } else {
-      return res.status(400).send({ error: "RUC inválido" })
+      return res.status(400).send({ error: "No se pudo validar el RUC." })
     }
   } catch (error) {
     console.error("Error al verificar el RUC:", error)
