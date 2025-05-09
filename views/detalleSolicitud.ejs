@@ -5,6 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Detalle de Solicitud</title>
     <link rel="stylesheet" href="/detalleSolicitud.css" />
+    <style>
+      .archivo-preview {
+        display: flex;
+        align-items: center;
+        margin-top: 5px;
+        gap: 10px;
+      }
+
+      .archivo-preview span {
+        flex: 1;
+      }
+
+      .btn-eliminar {
+        background-color: #e57373;
+        border: none;
+        color: white;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+      }
+
+      .btn-eliminar:hover {
+        background-color: #d32f2f;
+      }
+
+      .archivos-nuevos {
+        margin-top: 10px;
+      }
+    </style>
   </head>
   <body>
     <header>
@@ -20,12 +49,13 @@
         action="/user/solicitudes/<%= solicitudId %>/guardar-cambios"
         method="POST"
         enctype="multipart/form-data"
+        id="formulario"
       >
         <% secciones.forEach(seccion => { %>
         <div class="seccion">
           <h2>
-            <%= seccion.nombre .split(' ') .map(palabra =>
-            palabra.charAt(0).toUpperCase() + palabra.slice(1)) .join(' ') %>
+            <%= seccion.nombre .split(' ') .map(p => p.charAt(0).toUpperCase() +
+            p.slice(1)) .join(' ') %>
           </h2>
 
           <% const archivosSeccion = archivosPorSeccion.find(a =>
@@ -43,21 +73,71 @@
           <p>No se han subido archivos aún.</p>
           <% } %>
 
-          <label for="archivo-<%= seccion.id_seccion %>">
-            Subir archivo(s):
-          </label>
+          <label for="archivo-<%= seccion.id_seccion %>"
+            >Subir archivo(s):</label
+          >
           <input
             type="file"
             id="archivo-<%= seccion.id_seccion %>"
             name="archivos[<%= seccion.id_seccion %>][]"
             multiple
             accept=".pdf"
+            data-id="<%= seccion.id_seccion %>"
+            class="input-archivos"
           />
+
+          <div
+            id="preview-<%= seccion.id_seccion %>"
+            class="archivos-nuevos"
+          ></div>
         </div>
         <% }) %>
 
         <button type="submit">Guardar cambios</button>
       </form>
     </div>
+
+    <script>
+      document.querySelectorAll(".input-archivos").forEach((input) => {
+        input.addEventListener("change", function () {
+          const idSeccion = input.dataset.id
+          const previewContainer = document.getElementById(
+            "preview-" + idSeccion
+          )
+          const files = Array.from(input.files)
+
+          // Limpia vista anterior
+          previewContainer.innerHTML = ""
+
+          files.forEach((file, index) => {
+            const div = document.createElement("div")
+            div.classList.add("archivo-preview")
+
+            const span = document.createElement("span")
+            span.textContent = file.name
+
+            const btn = document.createElement("button")
+            btn.textContent = "X"
+            btn.classList.add("btn-eliminar")
+
+            btn.addEventListener("click", () => {
+              files.splice(index, 1)
+
+              // Crear nuevo objeto FileList simulando eliminación
+              const dt = new DataTransfer()
+              files.forEach((f) => dt.items.add(f))
+              input.files = dt.files
+
+              // Recargar vista
+              input.dispatchEvent(new Event("change"))
+            })
+
+            div.appendChild(span)
+            div.appendChild(btn)
+            previewContainer.appendChild(div)
+          })
+        })
+      })
+    </script>
   </body>
 </html>
