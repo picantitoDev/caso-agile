@@ -36,8 +36,8 @@
             <td><%= solicitud.nombre_carrera %></td>
             <td>
               <%= solicitud.fecha_creacion ? new
-              Date(solicitud.fecha_creacion).toLocaleDateString() : "Sin fecha"
-              %>
+              Date(solicitud.fecha_creacion).toLocaleDateString('es-PE', { day:
+              '2-digit', month: '2-digit', year: 'numeric' }) : "Sin fecha" %>
             </td>
             <td>
               <a
