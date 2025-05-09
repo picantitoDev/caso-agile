@@ -64,15 +64,20 @@ async function verSolicitudesUsuario(req, res) {
     const solicitudes = await dbSolicitudes.obtenerSolicitudesPorUsuario(
       idUsuario
     )
-    //const solicitudes = await dbSolicitudes.obtenerSolicitudes() // Obtener las solicitudes desde la base de datos
 
     const solicitudesConDiferencia = solicitudes.map((solicitud) => {
       const fechaCreacion = DateTime.fromJSDate(
         new Date(solicitud.fecha_creacion)
       ).setZone("America/Lima")
       const hoy = DateTime.now().setZone("America/Lima")
-      const diferenciaMinutos = hoy.diff(fechaCreacion, "minutes").minutes
-      const vencida = diferenciaMinutos >= 3
+      // const diferenciaMinutos = hoy.diff(fechaCreacion, "minutes").minutes
+      // const vencida = diferenciaMinutos >= 3
+
+      // Calcular la diferencia en días
+      const diferenciaDias = hoy.diff(fechaCreacion, "days").days
+
+      // Verificar si la diferencia es mayor o igual a 30 días
+      const vencida = diferenciaDias >= 30
 
       console.log("Hora actual servidor (UTC):", new Date().toISOString())
       console.log(
