@@ -9,9 +9,7 @@ router.get("/home", (req, res) => {
 
 router.get("/users", controladorUsuarios.obtenerUsuarios)
 
-router.get("/users/crear-usuario", (req, res) => {
-  res.render("crearUsuario")
-})
+router.get("/users/crear-usuario", controladorUsuarios.crearUsuarioGet)
 
 router.get("/crear-solicitud", controladorSolicitudes.crearSolicitudGet)
 router.post("/crear-solicitud", controladorSolicitudes.crearSolicitudPost)

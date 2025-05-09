@@ -24,6 +24,13 @@ async function obtenerUsuarioPorUniversidad(universidad) {
   }
 }
 
+const buscarUsuarioPorRuc = async (ruc) => {
+  const result = await pool.query("SELECT * FROM usuarios WHERE ruc = $1", [
+    ruc,
+  ])
+  return result.rows[0]
+}
+
 // Obtener todos los usuarios
 async function obtenerUsuarios() {
   const { rows } = await pool.query("SELECT * FROM usuarios")
@@ -69,4 +76,5 @@ module.exports = {
   buscarUsuarioPorId,
   insertarUsuario,
   obtenerUsuarioPorUniversidad,
+  buscarUsuarioPorRuc,
 }

@@ -4,10 +4,11 @@ require("dotenv").config()
 
 async function crearUsuarioGet(req, res) {
   try {
-    res.render("crearUsuario")
+    const usuarios = await dbUsuarios.obtenerUsuarios()
+    res.render("crearUsuario", { usuarios })
   } catch (error) {
-    console.error("Error al cargar formulario:", error)
-    res.status(500).send("Error al cargar formulario")
+    console.error("Error al cargar vista de crear usuario:", error)
+    res.status(500).send("Error al cargar vista de crear usuario")
   }
 }
 
@@ -30,6 +31,15 @@ const crearUsuarioPost = async (req, res, next) => {
       return res.status(409).send("El nombre de usuario ya está en uso.")
     }
 
+    if (ruc) {
+      const usuarioConMismoRuc = await dbUsuarios.buscarUsuarioPorRuc(ruc)
+      if (usuarioConMismoRuc) {
+        return res
+          .status(409)
+          .send("Ya existe un usuario registrado con ese RUC.")
+      }
+    }
+
     // Crea el usuario en la base de datos
     await dbUsuarios.insertarUsuario({
       username,
@@ -38,6 +48,8 @@ const crearUsuarioPost = async (req, res, next) => {
       universidad, // Puedes pasar el ID de la universidad si es necesario
       ruc, // Pasas el RUC si es necesario
     })
+
+    res.redirect("/admin/users")
   } catch (error) {
     next(error)
   }

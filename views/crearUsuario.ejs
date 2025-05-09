@@ -51,92 +51,56 @@
           </div>
         </div>
 
-        <!-- Paso 2: Creación de Usuario -->
-        <div class="step step-2">
-          <div class="university-info">
-            <div class="university-name" id="university-name"></div>
-            <div class="university-ruc" id="university-ruc"></div>
+     <!-- Paso 2: Creación de Usuario -->
+      <div class="step step-2">
+        <div class="university-info">
+          <div class="university-name" id="university-name"></div>
+          <div class="university-ruc" id="university-ruc"></div>
 
-            <div class="legal-reps" id="legal-reps-container">
-              <div class="legal-reps-title">REPRESENTANTES LEGALES</div>
-              <div id="legal-reps-list">
-                <!-- Aquí se inyectarán los representantes -->
-              </div>
+          <div class="legal-reps" id="legal-reps-container">
+            <div class="legal-reps-title">REPRESENTANTES LEGALES</div>
+            <div id="legal-reps-list">
+              <!-- Aquí se inyectarán los representantes -->
             </div>
-          </div>
-
-          <div class="form-group">
-            <label for="username">Nombre Completo</label>
-            <input
-              type="text"
-              id="username"
-              class="form-control"
-              placeholder="Ejemplo: Juan Pérez López"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="password">Contraseña Generada</label>
-            <div class="password-container">
-              <input
-                type="text"
-                id="password"
-                class="form-control"
-                value="UP2023@Xy29!"
-                readonly
-              />
-              <div class="password-action">
-                <button class="generate-btn" id="generate-btn">
-                  <i class="fas fa-sync-alt"></i> Generar nueva
-                </button>
-                <button
-                  class="copy-btn"
-                  id="copy-btn"
-                  title="Copiar contraseña"
-                >
-                  <i class="far fa-copy"></i>
-                </button>
-              </div>
-            </div>
-            <div class="password-hint">
-              La contraseña se generará automáticamente
-            </div>
-          </div>
-
-          <div class="btn-container">
-            <button class="btn btn-secondary" id="back-btn-2">Volver</button>
-            <button class="btn btn-success" id="create-user-btn">
-              Crear Usuario
-            </button>
           </div>
         </div>
 
-        <!-- Paso 3: Confirmación -->
-        <div class="step step-3">
-          <div class="success-container">
-            <div class="success-icon">
-              <i class="fas fa-check"></i>
-            </div>
-            <h3 class="success-title">¡Usuario creado con éxito!</h3>
-            <p class="success-message">
-              Se ha creado el usuario correctamente y se han almacenado sus
-              credenciales.
-            </p>
+        <div class="form-group">
+          <label for="username">Nombre Completo</label>
+          <input
+            type="text"
+            id="username"
+            class="form-control"
+            placeholder="Ejemplo: jperez24"
+            required
+          />
+        </div>
 
-            <div class="user-info">
-              <div class="user-info-title">Datos del usuario:</div>
-              <ul class="user-info-list" id="created-user-info">
-                <!-- Aquí se inyectarán los datos reales -->
-              </ul>
-            </div>
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <input
+            type="password"
+            id="password"
+            class="form-control"
+            placeholder="Ingrese una contraseña"
+            required
+          />
+        </div>
 
-            <button class="btn btn-primary" id="back-to-panel-btn">
-              Volver al Panel de Control
-            </button>
-          </div>
+        <div class="btn-container">
+          <button class="btn btn-secondary" id="back-btn-2">Volver</button>
+          <button class="btn btn-success" id="create-user-btn">
+            Crear Usuario
+          </button>
+        </div>
+      </div>
         </div>
       </div>
     </div>
+
+    <script id="usuarios-data" type="application/json">
+      <%- JSON.stringify(usuarios) %>
+    </script>
 
     <script>
       // Elementos del DOM
@@ -145,13 +109,16 @@
       const validateRucBtn = document.getElementById("validate-ruc-btn")
       const createUserBtn = document.getElementById("create-user-btn")
       const backToPanelBtn = document.getElementById("back-to-panel-btn")
-      const generateBtn = document.getElementById("generate-btn")
-      const copyBtn = document.getElementById("copy-btn")
       const passwordInput = document.getElementById("password")
       const rucInput = document.getElementById("ruc")
       const step1Elements = document.querySelectorAll(".step-1-element")
       const step2Elements = document.querySelectorAll(".step-2-element")
       const step3Elements = document.querySelectorAll(".step-3-element")
+
+      // Data de usuarios registrados
+      const usuarios = JSON.parse(
+        document.getElementById("usuarios-data").textContent
+      )
 
       // Función para mostrar un paso específico
       function showStep(stepNumber) {
@@ -196,6 +163,12 @@
           const data = await response.json()
           console.log("Respuesta de la API:", data)
 
+          const yaExiste = usuarios.some((user) => user.ruc === rucValue)
+          if (yaExiste) {
+            alert("Ya existe un usuario registrado con este RUC.")
+            return
+          }
+
           if (data.valido) {
             // Llenar nombre y RUC de la universidad
             document.getElementById("university-name").textContent =
@@ -232,6 +205,7 @@
           }
         } catch (error) {
           console.error("Error al validar el RUC:", error)
+
           alert("Error al validar el RUC")
           rucInput.value = "" // Limpiar el campo de RUC
         }
@@ -247,16 +221,12 @@
         }
       })
 
-      createUserBtn.addEventListener("click", () => {
-        // Aquí iría la lógica de creación de usuario
-        // Mostrar datos reales del usuario creado
-        const userInfoList = document.getElementById("created-user-info")
-        userInfoList.innerHTML = `
-                <li>Nombre: ${username.value}</li>
-                <li>Contraseña: ${password.value}</li>
-              `
-        showStep(3)
-      })
+      function restoreButton() {
+        validateRucBtn.disabled = false
+        validateRucBtn.style.opacity = "1"
+        validateRucBtn.textContent = "Validar RUC"
+        validateRucBtn.style.cursor = "pointer"
+      }
 
       backButtons.forEach((button) => {
         button.addEventListener("click", () => {
@@ -265,74 +235,76 @@
         })
       })
 
-      backToPanelBtn.addEventListener("click", () => {
-        window.location.href = "/admin/users"
-      })
-
-      // Función para generar contraseña aleatoria
-      generateBtn.addEventListener("click", () => {
-        const chars =
-          "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*"
-        let password = ""
-        for (let i = 0; i < 12; i++) {
-          password += chars.charAt(Math.floor(Math.random() * chars.length))
-        }
-        passwordInput.value = password
-      })
-
-      // Función para copiar la contraseña
-      copyBtn.addEventListener("click", () => {
-        passwordInput.select()
-        document.execCommand("copy")
-
-        // Cambiar el ícono brevemente para dar feedback
-        const originalIcon = copyBtn.innerHTML
-        copyBtn.innerHTML =
-          '<i class="fas fa-check" style="color: #34a853;"></i>'
-        setTimeout(() => {
-          copyBtn.innerHTML = originalIcon
-        }, 1500)
-      })
-
       createUserBtn.addEventListener("click", async () => {
-        const username = document.getElementById("username").value.trim()
-        const password = document.getElementById("password").value.trim()
-        const ruc = document.getElementById("ruc").value.trim()
+    try {
+        // Disable button immediately and change text
+        createUserBtn.disabled = true;
+        createUserBtn.textContent = "Creando usuario...";
+        createUserBtn.style.opacity = "0.5";
+        createUserBtn.style.cursor = "not-allowed";
+        
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const ruc = document.getElementById("ruc").value.trim();
         const universidad = document
-          .getElementById("university-name")
-          .textContent.trim()
+            .getElementById("university-name")
+            .textContent.trim();
 
+        // Validación de campos vacíos
         if (!username || !password || !universidad || !ruc) {
-          return alert("Por favor, complete todos los campos.")
+            alert("Por favor, complete todos los campos.");
+            restoreButton();
+            return;
         }
 
-        try {
-          const response = await fetch("/admin/users/crear-usuario", {
+        const userExists = usuarios.some((user) => user.username === username);
+        if (userExists) {
+            alert("El nombre de usuario ya está registrado.");
+            restoreButton();
+            return;
+        }
+
+        if (usuarios.some((user) => user.ruc === ruc)) {
+            alert("Ya existe un usuario con este RUC. No se puede crear otro.");
+            restoreButton();
+            return;
+        }
+
+        const response = await fetch("/admin/users/crear-usuario", {
             method: "POST",
             headers: {
-              "Content-Type": "application/json",
+                "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              username,
-              password,
-              rol: "representante", // Esto lo recibe el backend como `rol`
-              universidad,
-              ruc,
+                username,
+                password,
+                rol: "representante",
+                universidad,
+                ruc,
             }),
-          })
+        });
 
-          if (response.ok) {
-            showStep(3)
-          } else {
-            const errorText = await response.text()
-            alert("Error al crear el usuario: " + errorText)
-          }
-        } catch (error) {
-          console.error("Error al enviar datos:", error)
-          alert("Error inesperado al crear usuario.")
+        if (response.ok) {
+            console.log("User created successfully, redirecting...");
+            window.location = window.location.origin + "/admin/users";
+        } else {
+            const responseBody = await response.text(); // or response.json() if server returns JSON
+            alert("Error al crear el usuario: " + responseBody);
+            restoreButton();
         }
-      })
+    } catch (error) {
+        console.error("Error al enviar datos:", error);
+        alert("Error inesperado al crear usuario.");
+        restoreButton();
+    }
+});
 
+function restoreButton() {
+    createUserBtn.disabled = false;
+    createUserBtn.textContent = "Crear Usuario";
+    createUserBtn.style.opacity = "1";
+    createUserBtn.style.cursor = "pointer";
+}
       // Inicializar el primer paso
       showStep(1)
 
@@ -344,7 +316,7 @@
       document
         .getElementById("cancel-btn-1")
         .addEventListener("click", function () {
-          window.location.href = "/admin/home"
+          window.location.href = "/admin/users"
         })
     </script>
   </body>
