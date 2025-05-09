@@ -40,7 +40,7 @@
               <div class="carrera-name"><%= solicitud.nombre_carrera %></div>
               <div class="carrera-actions">
                 <span class="status-badge status-<%= solicitud.estado.toLowerCase() %>">
-                  <%= solicitud.estado %>
+                  <%= solicitud.vencida ? 'Finalizada' : 'En Proceso' %>
                 </span>
                 <p>Fecha de creación: <%= new Date(solicitud.fecha_creacion).toLocaleString() %></p> 
                 <form action="/user/solicitudes/<%= solicitud.id_solicitud %>" method="GET">
