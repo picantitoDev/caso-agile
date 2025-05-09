@@ -72,12 +72,18 @@ async function verSolicitudesUsuario(req, res) {
       // // Verificamos si han pasado 3 minutos o más
       // const vencida = diferenciaMinutos >= 3
 
-      const fechaCreacion = DateTime.fromISO(solicitud.fecha_creacion).setZone(
-        "America/Lima"
-      )
+      const fechaCreacion = DateTime.fromJSDate(
+        new Date(solicitud.fecha_creacion)
+      ).setZone("America/Lima")
       const hoy = DateTime.now().setZone("America/Lima")
       const diferenciaMinutos = hoy.diff(fechaCreacion, "minutes").minutes
       const vencida = diferenciaMinutos >= 3
+
+      console.log("Hora actual servidor (UTC):", new Date().toISOString())
+      console.log(
+        "Hora actual Lima (Luxon):",
+        DateTime.now().setZone("America/Lima").toISO()
+      )
 
       return {
         ...solicitud,
