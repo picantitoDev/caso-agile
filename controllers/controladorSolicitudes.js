@@ -60,21 +60,28 @@ async function verSolicitudesUsuario(req, res) {
     const solicitudes = await dbSolicitudes.obtenerSolicitudes() // Obtener las solicitudes desde la base de datos
 
     const solicitudesConDiferencia = solicitudes.map((solicitud) => {
-      // Convierte la fecha de creación de la solicitud a Luxon y la ajusta a la zona horaria de Lima
-      const fechaCreacion = DateTime.fromJSDate(
-        solicitud.fecha_creacion
-      ).setZone("America/Lima")
+      // // Convierte la fecha de creación de la solicitud a Luxon y la ajusta a la zona horaria de Lima
+      // const fechaCreacion = DateTime.fromJSDate(
+      //   solicitud.fecha_creacion
+      // ).setZone("America/Lima")
+      // const hoy = DateTime.now().setZone("America/Lima")
+
+      // // Calculamos la diferencia entre las fechas en minutos
+      // const diferenciaMinutos = hoy.diff(fechaCreacion, "minutes").minutes
+
+      // // Verificamos si han pasado 3 minutos o más
+      // const vencida = diferenciaMinutos >= 3
+
+      const fechaCreacion = DateTime.fromISO(solicitud.fecha_creacion).setZone(
+        "America/Lima"
+      )
       const hoy = DateTime.now().setZone("America/Lima")
-
-      // Calculamos la diferencia entre las fechas en minutos
       const diferenciaMinutos = hoy.diff(fechaCreacion, "minutes").minutes
-
-      // Verificamos si han pasado 3 minutos o más
       const vencida = diferenciaMinutos >= 3
 
       return {
         ...solicitud,
-        fechaCreacion: fechaCreacion.toISO(), // Pasamos la fecha procesada a la vista
+        fechaCreacion: fechaCreacion.toFormat("dd/MM/yyyy HH:mm:ss"),
         vencida,
       }
     })

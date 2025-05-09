@@ -42,7 +42,7 @@
                 <span class="status-badge status-<%= solicitud.estado.toLowerCase() %>">
                   <%= solicitud.vencida ? 'Finalizada' : 'En Proceso' %>
                 </span>
-                <p>Fecha de creación: <%= new Date(solicitud.fecha_creacion).toLocaleString() %></p> 
+                <p>Fecha de creación: <%= solicitud.fechaCreacion %></p>
                 <form action="/user/solicitudes/<%= solicitud.id_solicitud %>" method="GET">
                   <button class="action-btn <%= solicitud.vencida ? 'vencida' : '' %>"
                     <%= solicitud.vencida ? 'disabled title="Esta solicitud ha vencido (más de 30 días)"' : '' %>>
