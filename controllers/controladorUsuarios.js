@@ -29,13 +29,11 @@ const crearUsuarioPost = async (req, res, next) => {
     if (usuarioExistente) {
       return res.status(409).send("El nombre de usuario ya está en uso.")
     }
-    // Encripta la contraseña
-    const hashedPassword = await bcrypt.hash(password, 10)
 
     // Crea el usuario en la base de datos
     await dbUsuarios.insertarUsuario({
       username,
-      password: hashedPassword,
+      password,
       role: "representante", // Manejamos el rol que viene del formulario
       universidad, // Puedes pasar el ID de la universidad si es necesario
       ruc, // Pasas el RUC si es necesario
@@ -47,8 +45,15 @@ const crearUsuarioPost = async (req, res, next) => {
 
 const obtenerUsuarios = async (req, res) => {
   try {
-    const usuarios = await dbUsuarios.obtenerUsuarios()
-    res.render("usuarios", { usuarios })
+    const todosLosUsuarios = await dbUsuarios.obtenerUsuarios()
+    console.log(todosLosUsuarios)
+    // Filtrar solo los representantes
+    const representantes = todosLosUsuarios.filter(
+      (usuario) => usuario.role === "representante"
+    )
+
+    // Pasar a la vista como 'usuarios'
+    res.render("usuarios", { usuarios: representantes })
   } catch (error) {
     console.error("Error al obtener usuarios:", error)
     res.status(500).send("Error al obtener las usuarios")

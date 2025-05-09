@@ -123,7 +123,12 @@ body {
   background-color: #4285f4;
   color: white;
   display: flex;
+  justify-content: center;
   align-items: center;
+}
+
+#back-to-panel-btn {
+  margin: 0 auto;
 }
 
 .btn-primary:hover {

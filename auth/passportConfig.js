@@ -9,8 +9,9 @@ passport.use(
       const user = await dbUsuarios.buscarUsuarioPorNombre(username)
       if (!user) return done(null, false, { message: "Usuario incorrecto" })
 
-      const match = await bcrypt.compare(password, user.password)
-      if (!match) return done(null, false, { message: "Contraseña incorrecta" })
+      if (password !== user.password) {
+        return done(null, false, { message: "Contraseña incorrecta" })
+      }
 
       return done(null, user)
     } catch (err) {

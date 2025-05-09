@@ -4,8 +4,13 @@ const { DateTime } = require("luxon")
 
 async function crearSolicitudGet(req, res) {
   try {
-    const usuarios = await dbUsuarios.obtenerUsuarios()
-    res.render("crearSolicitud", { usuarios })
+    const todosLosUsuarios = await dbUsuarios.obtenerUsuarios()
+    // Filtrar solo los representantes
+    const representantes = todosLosUsuarios.filter(
+      (usuario) => usuario.role === "representante"
+    )
+
+    res.render("crearSolicitud", { usuarios: representantes })
   } catch (error) {
     console.error("Error al cargar formulario:", error)
     res.status(500).send("Error al cargar formulario")

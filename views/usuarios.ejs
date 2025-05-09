@@ -1,3 +1,42 @@
-Listado de Usuarios
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Listado de Representantes</title>
+    <link rel="stylesheet" href="/listarUsuarios.css" />
+  </head>
+  <body>
+    <h1>Listado de Usuarios</h1>
+    <a href="/admin/users/crear-usuario">Crear Usuario</a>
 
-<a href="users/crear-usuario">Crear Usuario</a>
+    <h2>Representantes Registrados</h2>
+
+    <% if (usuarios && usuarios.length > 0) { %>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Username</th>
+          <th>Contraseña</th>
+          <th>Universidad</th>
+          <th>RUC</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% usuarios.forEach(function(usuario) { %>
+        <tr>
+          <td><%= usuario.id_usuario %></td>
+          <td><%= usuario.username %></td>
+          <td><%= usuario.password %></td>
+          <td><%= usuario.universidad %></td>
+          <td><%= usuario.ruc %></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <% } else { %>
+    <p>No hay representantes registrados.</p>
+    <% } %>
+  </body>
+</html>

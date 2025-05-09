@@ -119,15 +119,14 @@
             </div>
             <h3 class="success-title">¡Usuario creado con éxito!</h3>
             <p class="success-message">
-              Se ha creado el usuario correctamente y se han enviado las
-              credenciales al correo electrónico.
+              Se ha creado el usuario correctamente y se han almacenado sus
+              credenciales.
             </p>
 
             <div class="user-info">
               <div class="user-info-title">Datos del usuario:</div>
-              <ul class="user-info-list">
-                <li>Nombre: María Rodríguez</li>
-                <li>Contraseña: Xk8#pL29qZlm</li>
+              <ul class="user-info-list" id="created-user-info">
+                <!-- Aquí se inyectarán los datos reales -->
               </ul>
             </div>
 
@@ -250,6 +249,12 @@
 
       createUserBtn.addEventListener("click", () => {
         // Aquí iría la lógica de creación de usuario
+        // Mostrar datos reales del usuario creado
+        const userInfoList = document.getElementById("created-user-info")
+        userInfoList.innerHTML = `
+                <li>Nombre: ${username.value}</li>
+                <li>Contraseña: ${password.value}</li>
+              `
         showStep(3)
       })
 
@@ -261,8 +266,7 @@
       })
 
       backToPanelBtn.addEventListener("click", () => {
-        // Redirigir al panel de control (simulado)
-        alert("Redirigiendo al Panel de Control...")
+        window.location.href = "/admin/users"
       })
 
       // Función para generar contraseña aleatoria

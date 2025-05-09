@@ -7,9 +7,7 @@ router.get("/home", (req, res) => {
   res.render("adminHome", { user: req.user })
 })
 
-router.get("/users", (req, res) => {
-  res.render("usuarios")
-})
+router.get("/users", controladorUsuarios.obtenerUsuarios)
 
 router.get("/users/crear-usuario", (req, res) => {
   res.render("crearUsuario")
