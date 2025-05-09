@@ -94,8 +94,6 @@ async function verSolicitudesUsuario(req, res) {
       // Tengo un poquito de meyo
       const diferenciaDias = hoy.diff(fechaCreacion, "days").days
       const vencida = diferenciaDias >= 30
-      console.log(`Diferencia de días: ${diferenciaDias}`)
-      console.log(`¿La fecha está vencida? ${vencida ? "Sí" : "No"}`)
 
       console.log("Hora actual servidor (UTC):", new Date().toISOString())
       console.log(
