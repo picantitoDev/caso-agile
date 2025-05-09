@@ -74,6 +74,7 @@ async function verSolicitudesUsuario(req, res) {
       // const vencida = diferenciaMinutos >= 3
 
       // Calcular la diferencia en días
+      // Tengo un poquito de meyo
       const diferenciaDias = hoy.diff(fechaCreacion, "days").days
       const vencida = diferenciaDias >= 30
       console.log(`Diferencia de días: ${diferenciaDias}`)
