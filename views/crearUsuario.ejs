@@ -340,6 +340,12 @@
       rucInput.addEventListener("input", function () {
         this.value = this.value.replace(/[^0-9]/g, "")
       })
+
+      document
+        .getElementById("cancel-btn-1")
+        .addEventListener("click", function () {
+          window.location.href = "/admin/home"
+        })
     </script>
   </body>
 </html>
