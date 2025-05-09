@@ -7,11 +7,16 @@
     <link rel="stylesheet" href="/listarUsuarios.css" />
   </head>
   <body>
-    <h1>Listado de Usuarios</h1>
-    <a href="/admin/users/crear-usuario">Crear Usuario</a>
+    <div class="title">
+      <a class="back-btn" href="/admin/home">← Atrás</a>
+      <h1>Listado de Usuarios</h1>
+      <div></div>
+    </div>
 
-    <h2>Representantes Registrados</h2>
-
+    <div class="headers">
+      <h2>Representantes Registrados</h2>
+      <a href="/admin/users/crear-usuario" class="crear-btn">Crear Usuario</a>
+    </div>
     <% if (usuarios && usuarios.length > 0) { %>
     <table>
       <thead>

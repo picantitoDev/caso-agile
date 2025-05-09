@@ -60,3 +60,19 @@ p {
   margin-top: 20px;
   font-style: italic;
 }
+
+.headers {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.crear-btn {
+  height: 20px;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
