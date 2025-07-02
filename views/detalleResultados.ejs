@@ -5,13 +5,42 @@
     <title>Resultados de Solicitud</title>
     <link rel="stylesheet" href="/detalleSolicitudAdmin.css" />
     <style>
-      .estado-evaluacion {
+      .estado-logrado {
+        background-color: #e8f5e9;
+        border-left: 5px solid #4caf50;
+        }
+
+        .estado-no-logrado {
+        background-color: #ffebee;
+        border-left: 5px solid #f44336;
+        }
+
+        .estado-evaluacion {
         background-color: #f0f0f0;
-        padding: 10px;
-        margin-top: 10px;
         border-left: 5px solid #9c27b0;
-        border-radius: 4px;
-      }
+        }
+        .estado-logrado,
+.estado-no-logrado,
+.estado-evaluacion {
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 4px;
+}
+
+.estado-logrado {
+  background-color: #e8f5e9;
+  border-left: 5px solid #4caf50;
+}
+
+.estado-no-logrado {
+  background-color: #ffebee;
+  border-left: 5px solid #f44336;
+}
+
+.estado-evaluacion {
+  background-color: #f0f0f0;
+  border-left: 5px solid #9c27b0;
+}
     </style>
   </head>
   <body>
@@ -59,14 +88,21 @@
               ev.id_seccion === seccion.id_seccion &&
               ev.id_solicitud === solicitud.id_solicitud) || null; %>
 
-          <% if (evaluacion) { %>
-            <div class="estado-evaluacion">
-              <p><strong>Estado de evaluación:</strong> <%= evaluacion.estado %></p>
-              <% if (evaluacion.observaciones) { %>
-                <p><strong>Observaciones:</strong> <%= evaluacion.observaciones %></p>
-              <% } %>
-            </div>
-          <% } else { %>
+          <% if (evaluacion) { 
+                const claseEstado =
+                evaluacion.estado === 'Logrado'
+                    ? 'estado-logrado'
+                    : evaluacion.estado === 'No logrado'
+                    ? 'estado-no-logrado'
+                    : 'estado-evaluacion'
+                    %>
+<div class="<%= claseEstado %>">
+            <p><strong>Estado de evaluación:</strong> <%= evaluacion.estado %></p>
+        <% if (evaluacion.observaciones) { %>
+        <p><strong>Observaciones:</strong> <%= evaluacion.observaciones %></p>
+        <% } %>
+    </div>
+    <% } else { %>
             <p class="mensaje-evaluacion-pendiente">
               Esta sección aún no ha sido evaluada.
             </p>
