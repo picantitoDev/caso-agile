@@ -51,95 +51,90 @@ async function generateICACITCertificate({
       }
     }
     
-    // Draw logo or fallback geometric logo
-    const logoX = 80;
-    const logoY = height - 80;
+    // Draw logo or fallback geometric logo - centered and bigger
+    const logoX = width / 2; // Center horizontally
+    const logoY = height - 100; // Position above headers
     
     if (logoImage) {
-      const logoScale = 0.3; // Adjust scale as needed
+      const logoScale = 0.5; // Increased from 0.3 to make it bigger
+      const logoWidth = logoImage.width * logoScale;
+      const logoHeight = logoImage.height * logoScale;
+      
       page.drawImage(logoImage, {
-        x: logoX - 30,
-        y: logoY - 30,
-        width: logoImage.width * logoScale,
-        height: logoImage.height * logoScale,
+        x: logoX - (logoWidth / 2), // Center the logo
+        y: logoY - (logoHeight / 2),
+        width: logoWidth,
+        height: logoHeight,
       });
     } else {
-      // Fallback geometric logo
+      // Fallback geometric logo - centered and bigger
       page.drawCircle({
         x: logoX,
         y: logoY,
-        size: 25,
+        size: 35, // Increased from 25
         color: darkBlue,
       });
       
       page.drawCircle({
-        x: logoX - 10,
-        y: logoY + 5,
-        size: 15,
+        x: logoX - 15, // Adjusted proportionally
+        y: logoY + 8,
+        size: 22, // Increased from 15
         color: lightBlue,
       });
       
       page.drawCircle({
-        x: logoX + 10,
-        y: logoY - 5,
-        size: 12,
+        x: logoX + 15, // Adjusted proportionally
+        y: logoY - 8,
+        size: 18, // Increased from 12
         color: lightBlue,
       });
     }
     
-    // Draw "ICACIT" text
-    page.drawText('ICACIT', {
-      x: logoX + 60,
-      y: logoY - 5,
-      size: 36,
-      font: helveticaBoldFont,
-      color: darkBlue,
-    });
-    
-    // Main header text - adjusted for landscape
+    // Main header text - center justified and moved down
     const headerText1 = 'El Comité Técnico de Acreditación de Ingeniería (CTAI) del Instituto de Calidad y Acreditación de Programas de';
     const headerText2 = 'Computación, Ingeniería y Tecnología – ICACIT ha completado la evaluación del Programa en:';
     
+    const headerText1Width = helveticaFont.widthOfTextAtSize(headerText1, 12);
+    const headerText2Width = helveticaFont.widthOfTextAtSize(headerText2, 12);
+    
     page.drawText(headerText1, {
-      x: 60,
-      y: height - 140,
+      x: (width - headerText1Width) / 2,
+      y: height - 180, // Moved down from -140
       size: 12,
       font: helveticaFont,
       color: black,
-      maxWidth: width - 120,
     });
     
     page.drawText(headerText2, {
-      x: 60,
-      y: height - 160,
+      x: (width - headerText2Width) / 2,
+      y: height - 200, // Moved down from -160
       size: 12,
       font: helveticaFont,
       color: black,
-      maxWidth: width - 120,
     });
     
-    // Program name (large, bold, centered)
+    // Program name (large, bold, centered) - moved down
     const programNameWidth = timesRomanBoldFont.widthOfTextAtSize(programName, 28);
     page.drawText(programName, {
       x: (width - programNameWidth) / 2,
-      y: height - 220,
+      y: height - 260, // Moved down from -220
       size: 28,
       font: timesRomanBoldFont,
       color: black,
     });
     
-    // University information
+    // University information - moved down
     const universityText = `De la ${universityName}, ${modalidad}`;
     const universityTextWidth = helveticaFont.widthOfTextAtSize(universityText, 14);
     page.drawText(universityText, {
       x: (width - universityTextWidth) / 2,
-      y: height - 260,
+      y: height - 300, // Moved down from -260
       size: 14,
       font: helveticaFont,
       color: black,
     });
     
-    // Accreditation text
+    // Accreditation text - moved down
     const accreditationText1 = `Este Programa ha logrado la Acreditación ICACIT hasta la siguiente fecha`;
     const accreditationText2 = `de revisión que se realizará en el Ciclo de Acreditación ${accreditationDate}.`;
     
@@ -148,7 +143,7 @@ async function generateICACITCertificate({
     
     page.drawText(accreditationText1, {
       x: (width - accreditationText1Width) / 2,
-      y: height - 320,
+      y: height - 360, // Moved down from -320
       size: 12,
       font: helveticaFont,
       color: black,
@@ -156,7 +151,7 @@ async function generateICACITCertificate({
     
     page.drawText(accreditationText2, {
       x: (width - accreditationText2Width) / 2,
-      y: height - 340,
+      y: height - 380, // Moved down from -340
       size: 12,
       font: helveticaFont,
       color: black,
@@ -164,7 +159,7 @@ async function generateICACITCertificate({
     
     // Signature section - positioned for landscape
     const signatureY = height - 450;
-    const leftSignatureX = 180;
+    const leftSignatureX = 220; // Moved more to the right from 180
     const rightSignatureX = 580;
     
     // Load signature images if provided
@@ -174,7 +169,13 @@ async function generateICACITCertificate({
     if (leftSignaturePath && fs.existsSync(leftSignaturePath)) {
       try {
         const leftSigBytes = fs.readFileSync(leftSignaturePath);
-        leftSignatureImage = await pdfDoc.embedPng(leftSigBytes);
+        const leftSigExtension = leftSignaturePath.toLowerCase().split('.').pop();
+        
+        if (leftSigExtension === 'png') {
+          leftSignatureImage = await pdfDoc.embedPng(leftSigBytes);
+        } else if (leftSigExtension === 'jpg' || leftSigExtension === 'jpeg') {
+          leftSignatureImage = await pdfDoc.embedJpg(leftSigBytes);
+        }
       } catch (error) {
         console.warn('Could not load left signature image:', error.message);
       }
@@ -183,7 +184,13 @@ async function generateICACITCertificate({
     if (rightSignaturePath && fs.existsSync(rightSignaturePath)) {
       try {
         const rightSigBytes = fs.readFileSync(rightSignaturePath);
-        rightSignatureImage = await pdfDoc.embedPng(rightSigBytes);
+        const rightSigExtension = rightSignaturePath.toLowerCase().split('.').pop();
+        
+        if (rightSigExtension === 'png') {
+          rightSignatureImage = await pdfDoc.embedPng(rightSigBytes);
+        } else if (rightSigExtension === 'jpg' || rightSigExtension === 'jpeg') {
+          rightSignatureImage = await pdfDoc.embedJpg(rightSigBytes);
+        }
       } catch (error) {
         console.warn('Could not load right signature image:', error.message);
       }
@@ -191,10 +198,10 @@ async function generateICACITCertificate({
     
     // Left signature area
     if (leftSignatureImage) {
-      const sigScale = 0.5; // Adjust scale as needed
+      const sigScale = 0.13; // Much smaller scale
       page.drawImage(leftSignatureImage, {
-        x: leftSignatureX - 50,
-        y: signatureY + 10,
+        x: 34 + leftSignatureX - (leftSignatureImage.width * sigScale) / 2,
+        y: signatureY - 38,
         width: leftSignatureImage.width * sigScale,
         height: leftSignatureImage.height * sigScale,
       });
@@ -202,18 +209,18 @@ async function generateICACITCertificate({
     
     // Left signature line
     page.drawLine({
-      start: { x: leftSignatureX - 70, y: signatureY },
-      end: { x: leftSignatureX + 70, y: signatureY },
+      start: { x: leftSignatureX - 70 + 35, y: signatureY },
+      end: { x: leftSignatureX + 70 + 35, y: signatureY },
       thickness: 1,
       color: black,
     });
     
     // Right signature area
     if (rightSignatureImage) {
-      const sigScale = 0.5; // Adjust scale as needed
+      const sigScale = 0.18; // Much smaller scale
       page.drawImage(rightSignatureImage, {
-        x: rightSignatureX - 50,
-        y: signatureY + 10,
+        x: 12 + rightSignatureX - (rightSignatureImage.width * sigScale) / 2,
+        y: signatureY - 30,
         width: rightSignatureImage.width * sigScale,
         height: rightSignatureImage.height * sigScale,
       });
@@ -230,7 +237,7 @@ async function generateICACITCertificate({
     // Signature names and titles
     const presidenteNameWidth = helveticaFont.widthOfTextAtSize(presidenteName, 11);
     page.drawText(presidenteName, {
-      x: leftSignatureX - (presidenteNameWidth / 2),
+      x: leftSignatureX - (presidenteNameWidth / 2) + 35,
       y: signatureY - 20,
       size: 11,
       font: helveticaFont,
@@ -239,7 +246,7 @@ async function generateICACITCertificate({
     
     const presidenteTitleWidth = helveticaFont.widthOfTextAtSize('Presidente', 10);
     page.drawText('Presidente', {
-      x: leftSignatureX - (presidenteTitleWidth / 2),
+      x: leftSignatureX - (presidenteTitleWidth / 2) + 35,
       y: signatureY - 35,
       size: 10,
       font: helveticaFont,
@@ -248,7 +255,7 @@ async function generateICACITCertificate({
     
     const consejoTitleWidth = helveticaFont.widthOfTextAtSize('Consejo Directivo', 10);
     page.drawText('Consejo Directivo', {
-      x: leftSignatureX - (consejoTitleWidth / 2),
+      x: leftSignatureX - (consejoTitleWidth / 2) + 35,
       y: signatureY - 50,
       size: 10,
       font: helveticaFont,
@@ -318,9 +325,9 @@ async function example() {
       accreditationDate: '2023',
       presidenteName: 'Enrique Alvarez Rodrich',
       technicalCommitteePresidentName: 'César Gallegos Chávez',
-      logoPath: './public/logo-icacit.png', 
-      leftSignaturePath: './public/firma1.png', 
-      rightSignaturePath: './public/firma2.png', 
+      logoPath: './icacit-logo.png', // Optional: provide your logo path
+      leftSignaturePath: './signature-president.png', // Optional: left signature
+      rightSignaturePath: './signature-tech-president.png', // Optional: right signature
       outputPath: 'certificate-mecatronica-landscape.pdf'
     });
   } catch (error) {
@@ -333,3 +340,6 @@ module.exports = {
   generateICACITCertificate,
   example
 };
+
+// Uncomment to run example
+// example();
