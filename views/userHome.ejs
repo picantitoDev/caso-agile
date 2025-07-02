@@ -40,7 +40,13 @@
               <div class="carrera-name"><%= solicitud.nombre_carrera %></div>
               <div class="carrera-actions">
                 <span class="status-badge status-<%= solicitud.estado.toLowerCase() %>">
-                  <%= solicitud.vencida ? 'Finalizada' : 'En Proceso' %>
+                  <% if (solicitud.estado === 'pendiente') { %>
+                    En Proceso
+                  <% } else if (solicitud.estado === 'en_evaluacion') { %>
+                    En Evaluación
+                  <% } else { %>
+                    <%= solicitud.estado %>
+                  <% } %>
                 </span>
                 <p>Fecha de creación: <%= solicitud.fechaCreacion %></p>
                 <form action="/user/solicitudes/<%= solicitud.id_solicitud %>" method="GET">
