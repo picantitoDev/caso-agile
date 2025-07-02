@@ -22,32 +22,79 @@
 
     <main class="container">
       <% secciones.forEach(seccion => { %>
-      <div class="seccion">
-        <h2><%= seccion.nombre.replace(/\b\w/g, c => c.toUpperCase()) %></h2>
+        <div class="seccion">
+          <h2><%= seccion.nombre.replace(/\b\w/g, c => c.toUpperCase()) %></h2>
 
-        <% const archivosSeccion = archivosPorSeccion.find(a =>
-        a.seccion.id_seccion === seccion.id_seccion); %> <% if (archivosSeccion
-        && archivosSeccion.archivos.length > 0) { %>
-        <ul class="lista-archivos">
-          <% archivosSeccion.archivos.forEach(archivo => { %>
-          <li>
-            <span
-              ><%= archivo.nombre_archivo %> (<%= archivo.tipo_mime %>)</span
-            >
-            <a
-              href="/admin/descargar-archivo/<%= archivo.id_archivo %>"
-              class="btn-descargar"
-              download
-              >Descargar</a
-            >
-          </li>
-          <% }) %>
-        </ul>
-        <% } else { %>
-        <p class="sin-archivos">No hay archivos subidos en esta sección.</p>
-        <% } %>
-      </div>
+          <% const archivosSeccion = archivosPorSeccion.find(a =>
+              a.seccion.id_seccion === seccion.id_seccion); %> 
+
+          <% if (archivosSeccion && archivosSeccion.archivos.length > 0) { %>
+            <ul class="lista-archivos">
+              <% archivosSeccion.archivos.forEach(archivo => { %>
+              <li>
+                <span><%= archivo.nombre_archivo %> (<%= archivo.tipo_mime %>)</span>
+                <a
+                  href="/admin/descargar-archivo/<%= archivo.id_archivo %>"
+                  class="btn-descargar"
+                  download
+                  >Descargar</a>
+              </li>
+              <% }) %>
+            </ul>
+          <% } else { %>
+            <p class="sin-archivos">No hay archivos subidos en esta sección.</p>
+          <% } %>
+
+          <% const evaluacion = evaluaciones.find(ev =>
+              ev.id_seccion === seccion.id_seccion &&
+              ev.id_solicitud === solicitud.id_solicitud) || {}; %>
+
+          <form 
+            method="POST" 
+            action="/admin/evaluar/<%= solicitud.id_solicitud %>/<%= seccion.id_seccion %>" 
+            class="form-evaluacion"
+          >
+            <label for="estado-<%= seccion.id_seccion %>"><strong>Evaluación:</strong></label>
+            <select name="estado" id="estado-<%= seccion.id_seccion %>" required>
+              <option value="">Seleccione evaluación</option>
+              <option value="Logrado" <%= evaluacion.estado === 'Logrado' ? 'selected' : '' %>>Logrado</option>
+              <option value="En proceso" <%= evaluacion.estado === 'En proceso' ? 'selected' : '' %>>En proceso</option>
+              <option value="No logrado" <%= evaluacion.estado === 'No logrado' ? 'selected' : '' %>>No logrado</option>
+            </select>
+
+            <label for="observaciones-<%= seccion.id_seccion %>">Observaciones:</label>
+            <textarea
+              id="observaciones-<%= seccion.id_seccion %>"
+              name="observaciones"
+              rows="2"
+              placeholder="Comentarios del evaluador..."
+            ><%= evaluacion.observaciones || '' %></textarea>
+
+            <button type="submit" class="btn-guardar">Guardar Evaluación</button>
+          </form>
+        </div>
       <% }) %>
     </main>
+
+    <script>
+  // Esperar a que el DOM esté listo
+  document.addEventListener("DOMContentLoaded", function () {
+    const formularios = document.querySelectorAll(".form-evaluacion");
+
+    formularios.forEach(form => {
+      form.addEventListener("submit", function (e) {
+        const btn = form.querySelector("button[type='submit']");
+        btn.disabled = true;
+        btn.textContent = "Guardando...";
+
+        // Mostrar el alert luego de un pequeño delay para que la redirección no lo cancele
+        setTimeout(() => {
+          alert("✅ Evaluación guardada correctamente");
+        }, 100);
+      });
+    });
+  });
+</script>
+
   </body>
 </html>

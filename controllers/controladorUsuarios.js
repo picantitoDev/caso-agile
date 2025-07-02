@@ -88,8 +88,8 @@ const validarRuc = async (req, res) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        token: process.env.SUNAT_TOKEN,
-        ruc: ruc,
+          token: process.env.SUNAT_TOKEN,
+          ruc: ruc,
       }),
     })
 
@@ -139,9 +139,12 @@ const validarRuc = async (req, res) => {
       return res.status(400).send({ error: "No se pudo validar el RUC." })
     }
   } catch (error) {
-    console.error("Error al verificar el RUC:", error)
-    return res.status(500).send("Error al verificar el RUC.")
-  }
+    console.error("Error al verificar el RUC:", error.message || error)
+  return res.status(500).json({
+    error: "Error al verificar el RUC.",
+    detalle: error.message || "Error desconocido"
+  })
+}
 }
 
 module.exports = {

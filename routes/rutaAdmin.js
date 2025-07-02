@@ -25,5 +25,6 @@ router.get(
 
 router.post("/users/crear-usuario/validar-ruc", controladorUsuarios.validarRuc)
 router.post("/users/crear-usuario", controladorUsuarios.crearUsuarioPost)
+router.post("/evaluar/:id_solicitud/:id_seccion", controladorSolicitudes.evaluarSeccionPost);
 
 module.exports = router

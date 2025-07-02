@@ -67,6 +67,7 @@ async function crearSolicitudPost(req, res) {
 async function gestionSolicitudesGet(req, res) {
   try {
     const solicitudes = await dbSolicitudes.obtenerSolicitudes()
+    
     console.log(solicitudes)
     res.render("solicitudes", { solicitudes })
   } catch (error) {
@@ -87,13 +88,13 @@ async function verSolicitudesUsuario(req, res) {
         new Date(solicitud.fecha_creacion)
       ).setZone("America/Lima")
       const hoy = DateTime.now().setZone("America/Lima")
-      const diferenciaMinutos = hoy.diff(fechaCreacion, "minutes").minutes
-      const vencida = diferenciaMinutos >= 15
+      // const diferenciaMinutos = hoy.diff(fechaCreacion, "minutes").minutes
+      // const vencida = diferenciaMinutos >= 15
 
       // Calcular la diferencia en días
       // Tengo un poquito de meyo
-      //const diferenciaDias = hoy.diff(fechaCreacion, "days").days
-      //const vencida = diferenciaDias >= 30
+      const diferenciaDias = hoy.diff(fechaCreacion, "days").days
+      const vencida = diferenciaDias >= 30
 
       console.log("Hora actual servidor (UTC):", new Date().toISOString())
       console.log(
@@ -130,6 +131,8 @@ async function verDetalleSolicitud(req, res) {
       id_solicitud
     )
 
+    const evaluaciones = await dbSolicitudes.obtenerEvaluacionesPorSolicitud(id_solicitud);
+
     // Mapear archivos por sección para facilitar el renderizado
     const archivosPorSeccion = secciones.map((seccion) => {
       return {
@@ -146,6 +149,7 @@ async function verDetalleSolicitud(req, res) {
       secciones,
       archivosPorSeccion,
       user: req.user,
+      evaluaciones
     })
   } catch (error) {
     console.error("Error al cargar detalle:", error)
@@ -204,9 +208,10 @@ async function gestionDetalleSolicitudGet(req, res) {
     const secciones = await dbSolicitudes.obtenerSecciones()
 
     // Obtener los archivos agrupados por sección
-    const archivos = await dbSolicitudes.obtenerArchivosPorSolicitudAdmin(
-      id_solicitud
-    )
+    const archivos = await dbSolicitudes.obtenerArchivosPorSolicitudAdmin(id_solicitud);
+
+    // Obtener evaluaciones por sección (esto es lo nuevo)
+    const evaluaciones = await dbSolicitudes.obtenerEvaluacionesPorSolicitud(id_solicitud);
 
     // Agrupar por id_seccion
     const archivosPorSeccion = secciones.map((seccion) => {
@@ -216,11 +221,14 @@ async function gestionDetalleSolicitudGet(req, res) {
       }
     })
 
+    // Renderizar vista de admin
     res.render("detalleSolicitudAdmin", {
       solicitud,
       secciones,
       archivosPorSeccion,
-    })
+      evaluaciones, 
+    });
+
   } catch (error) {
     console.error("Error al obtener detalle de solicitud:", error)
     res.status(500).send("Error interno del servidor")
@@ -267,6 +275,38 @@ async function eliminarArchivo(req, res) {
   }
 }
 
+// EVALUACIONES
+
+async function evaluarSeccionPost(req, res) {
+  const { id_solicitud, id_seccion } = req.params;
+  const { estado, observaciones } = req.body;
+
+  try {
+    // Validar entrada mínima
+    if (!["Logrado", "En proceso", "No logrado"].includes(estado)) {
+      return res.status(400).send("Estado no válido.");
+    }
+
+    // Ver si ya existe una evaluación previa
+    const existente = await dbSolicitudes.obtenerEvaluacionIndividual(id_solicitud, id_seccion);
+
+    if (existente) {
+      // Si ya existe, actualizamos
+      await dbSolicitudes.actualizarEvaluacion(id_solicitud, id_seccion, estado, observaciones);
+    } else {
+      // Si no existe, insertamos nueva evaluación
+      await dbSolicitudes.insertarEvaluacion(id_solicitud, id_seccion, estado, observaciones);
+    }
+
+    res.redirect(`/admin/solicitudes/${id_solicitud}`);
+  } catch (error) {
+    console.error("Error al guardar evaluación:", error);
+    res.status(500).send("Error al guardar evaluación.");
+  }
+}
+
+
+
 module.exports = {
   crearSolicitudGet,
   crearSolicitudPost,
@@ -277,4 +317,5 @@ module.exports = {
   gestionDetalleSolicitudGet,
   descargarArchivo,
   eliminarArchivo,
+  evaluarSeccionPost
 }

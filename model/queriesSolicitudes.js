@@ -133,6 +133,45 @@ async function eliminarArchivoPorId(id_archivo) {
   await pool.query(query, [id_archivo])
 }
 
+// Obtener todas las evaluaciones de una solicitud
+async function obtenerEvaluacionesPorSolicitud(id_solicitud) {
+  const result = await pool.query(
+    `SELECT * FROM evaluacion_seccion WHERE id_solicitud = $1`,
+    [id_solicitud]
+  );
+  return result.rows;
+}
+
+// Obtener evaluación puntual para saber si ya existe
+async function obtenerEvaluacionIndividual(id_solicitud, id_seccion) {
+  const result = await pool.query(
+    `SELECT * FROM evaluacion_seccion WHERE id_solicitud = $1 AND id_seccion = $2`,
+    [id_solicitud, id_seccion]
+  );
+  return result.rows[0];
+}
+
+// Insertar nueva evaluación
+async function insertarEvaluacion(id_solicitud, id_seccion, estado, observaciones) {
+  await pool.query(
+    `INSERT INTO evaluacion_seccion (id_solicitud, id_seccion, estado, observaciones)
+     VALUES ($1, $2, $3, $4)`,
+    [id_solicitud, id_seccion, estado, observaciones]
+  );
+}
+
+// Actualizar evaluación existente
+async function actualizarEvaluacion(id_solicitud, id_seccion, estado, observaciones) {
+  await pool.query(
+    `UPDATE evaluacion_seccion SET estado = $3, observaciones = $4
+     WHERE id_solicitud = $1 AND id_seccion = $2`,
+    [id_solicitud, id_seccion, estado, observaciones]
+  );
+}
+
+
+
+
 module.exports = {
   obtenerSecciones,
   obtenerArchivosPorSolicitud,
@@ -144,4 +183,9 @@ module.exports = {
   obtenerArchivosPorSolicitudAdmin,
   obtenerArchivoPorId,
   eliminarArchivoPorId,
+  obtenerEvaluacionesPorSolicitud,
+  obtenerEvaluacionesPorSolicitud,
+  obtenerEvaluacionIndividual,
+  insertarEvaluacion,
+  actualizarEvaluacion,
 }

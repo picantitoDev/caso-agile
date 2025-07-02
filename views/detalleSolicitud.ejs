@@ -33,6 +33,14 @@
       .archivos-nuevos {
         margin-top: 10px;
       }
+
+      .estado-evaluacion {
+  background-color: #eee;
+  padding: 10px;
+  border-left: 4px solid #9c27b0;
+  margin-top: 10px;
+  border-radius: 5px;
+}
     </style>
   </head>
   <body>
@@ -101,9 +109,24 @@
             id="preview-<%= seccion.id_seccion %>"
             class="archivos-nuevos"
           ></div>
+
+          <% const evaluacion = evaluaciones.find(ev =>
+              ev.id_seccion === seccion.id_seccion &&
+              ev.id_solicitud == solicitudId
+          ) || null; %>
+
+          <% if (evaluacion) { %>
+            <div class="estado-evaluacion">
+              <p><strong>Estado de evaluación:</strong> <%= evaluacion.estado %></p>
+              <% if (evaluacion.observaciones) { %>
+                <p><strong>Observaciones:</strong> <%= evaluacion.observaciones %></p>
+              <% } %>
+            </div>
+          <% } else { %>
+            <p><em>Esta sección aún no ha sido evaluada.</em></p>
+          <% } %>
         </div>
         <% }) %>
-
         <button type="submit">Guardar cambios</button>
       </form>
     </div>
