@@ -96,3 +96,11 @@ header h1 {
   font-weight: bold;
   text-decoration: none;
 }
+
+.mensaje-evaluacion-pendiente {
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+}

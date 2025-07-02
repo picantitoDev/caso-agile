@@ -24,6 +24,7 @@
             <th>Representante</th>
             <th>Carrera</th>
             <th>Fecha de Creación</th>
+            <th>Estado</th>
             <th>Acción</th>
           </tr>
         </thead>
@@ -39,6 +40,7 @@
               Date(solicitud.fecha_creacion).toLocaleDateString('es-PE', { day:
               '2-digit', month: '2-digit', year: 'numeric' }) : "Sin fecha" %>
             </td>
+            <td><%= solicitud.estado === 'pendiente' ? 'Pendiente' : 'En Evaluación' %></td>
             <td>
               <a
                 class="btn-gestionar"

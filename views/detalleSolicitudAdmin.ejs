@@ -49,29 +49,35 @@
               ev.id_seccion === seccion.id_seccion &&
               ev.id_solicitud === solicitud.id_solicitud) || {}; %>
 
-          <form 
-            method="POST" 
-            action="/admin/evaluar/<%= solicitud.id_solicitud %>/<%= seccion.id_seccion %>" 
-            class="form-evaluacion"
-          >
-            <label for="estado-<%= seccion.id_seccion %>"><strong>Evaluación:</strong></label>
-            <select name="estado" id="estado-<%= seccion.id_seccion %>" required>
-              <option value="">Seleccione evaluación</option>
-              <option value="Logrado" <%= evaluacion.estado === 'Logrado' ? 'selected' : '' %>>Logrado</option>
-              <option value="En proceso" <%= evaluacion.estado === 'En proceso' ? 'selected' : '' %>>En proceso</option>
-              <option value="No logrado" <%= evaluacion.estado === 'No logrado' ? 'selected' : '' %>>No logrado</option>
-            </select>
+          <% if (solicitud.estado === 'en_evaluacion') { %>
+            <form 
+              method="POST" 
+              action="/admin/evaluar/<%= solicitud.id_solicitud %>/<%= seccion.id_seccion %>" 
+              class="form-evaluacion"
+            >
+              <label for="estado-<%= seccion.id_seccion %>"><strong>Evaluación:</strong></label>
+              <select name="estado" id="estado-<%= seccion.id_seccion %>" required>
+                <option value="">Seleccione evaluación</option>
+                <option value="Logrado" <%= evaluacion.estado === 'Logrado' ? 'selected' : '' %>>Logrado</option>
+                <option value="En proceso" <%= evaluacion.estado === 'En proceso' ? 'selected' : '' %>>En proceso</option>
+                <option value="No logrado" <%= evaluacion.estado === 'No logrado' ? 'selected' : '' %>>No logrado</option>
+              </select>
 
-            <label for="observaciones-<%= seccion.id_seccion %>">Observaciones:</label>
-            <textarea
-              id="observaciones-<%= seccion.id_seccion %>"
-              name="observaciones"
-              rows="2"
-              placeholder="Comentarios del evaluador..."
-            ><%= evaluacion.observaciones || '' %></textarea>
+              <label for="observaciones-<%= seccion.id_seccion %>">Observaciones:</label>
+              <textarea
+                id="observaciones-<%= seccion.id_seccion %>"
+                name="observaciones"
+                rows="2"
+                placeholder="Comentarios del evaluador..."
+              ><%= evaluacion.observaciones || '' %></textarea>
 
-            <button type="submit" class="btn-guardar">Guardar Evaluación</button>
-          </form>
+              <button type="submit" class="btn-guardar">Guardar Evaluación</button>
+            </form>
+          <% } else { %>
+            <p class="mensaje-evaluacion-pendiente">
+              🕒 Esta solicitud aún está en proceso. La evaluación estará disponible después de los 30 días.
+            </p>
+          <% } %>
         </div>
       <% }) %>
     </main>
