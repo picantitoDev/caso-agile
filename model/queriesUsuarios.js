@@ -46,9 +46,16 @@ const buscarUsuarioPorId = async (id) => {
   return rows[0]
 }
 
+async function existeUsuarioPorEmail(email) {
+  const { rows } = await pool.query("SELECT 1 FROM usuarios WHERE email = $1", [email]);
+  return rows.length > 0;
+}
+
+
 // Crear un nuevo usuario
 async function insertarUsuario({
   username,
+  email,      
   password,
   role,
   universidad = null,
@@ -56,17 +63,17 @@ async function insertarUsuario({
 }) {
   try {
     const query = `
-      INSERT INTO usuarios (username, password, role, universidad, ruc)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO usuarios (username, email, password, role, universidad, ruc)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *;
-    `
+    `;
 
-    const values = [username, password, role, universidad, ruc]
+    const values = [username, email, password, role, universidad, ruc]; 
 
-    const { rows } = await pool.query(query, values)
-    console.log("Usuario creado:", rows[0])
+    const { rows } = await pool.query(query, values);
+    console.log("Usuario creado:", rows[0]);
   } catch (err) {
-    console.error("Error al crear usuario:", err)
+    console.error("Error al crear usuario:", err);
   }
 }
 
@@ -77,4 +84,5 @@ module.exports = {
   insertarUsuario,
   obtenerUsuarioPorUniversidad,
   buscarUsuarioPorRuc,
+  existeUsuarioPorEmail
 }

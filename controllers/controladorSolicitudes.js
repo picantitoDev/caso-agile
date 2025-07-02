@@ -121,8 +121,10 @@ async function verSolicitudesUsuario(req, res) {
           seccionesHabilitadas = evaluaciones.some((ev) => {
             if (ev.estado !== "En proceso" || !ev.fecha_habilitacion) return false;
             const fecha = DateTime.fromJSDate(ev.fecha_habilitacion).setZone("America/Lima");
-            return hoy.diff(fecha, "days").days < 7;
-          });
+              const ahora = DateTime.now().setZone("America/Lima");
+
+            return ahora.diff(fecha, "minutes").minutes < 3;          
+        });
         }
 
         return {
@@ -163,7 +165,7 @@ async function verDetalleSolicitud(req, res) {
         const fecha = DateTime.fromJSDate(ev.fecha_habilitacion).setZone("America/Lima");
         const ahora = DateTime.now().setZone("America/Lima");
 
-        return ahora.diff(fecha, "days").days < 7;
+        return ahora.diff(fecha, "minutes").minutes < 3;
       });
 
       if (!haySeccionHabilitada) {

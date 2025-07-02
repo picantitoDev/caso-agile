@@ -77,6 +77,17 @@
         </div>
 
         <div class="form-group">
+        <label for="email">Correo electrónico</label>
+        <input
+          type="email"
+          id="email"
+          class="form-control"
+          placeholder="ejemplo@universidad.edu.pe"
+          required
+        />
+      </div>
+
+        <div class="form-group">
           <label for="password">Contraseña</label>
           <input
             type="password"
@@ -246,12 +257,14 @@
         const username = document.getElementById("username").value.trim();
         const password = document.getElementById("password").value.trim();
         const ruc = document.getElementById("ruc").value.trim();
+        const email = document.getElementById("email").value.trim();
+
         const universidad = document
             .getElementById("university-name")
             .textContent.trim();
 
         // Validación de campos vacíos
-        if (!username || !password || !universidad || !ruc) {
+        if (!username || !password || !universidad || !ruc || !email) {
             alert("Por favor, complete todos los campos.");
             restoreButton();
             return;
@@ -260,6 +273,12 @@
         const userExists = usuarios.some((user) => user.username === username);
         if (userExists) {
             alert("El nombre de usuario ya está registrado.");
+            restoreButton();
+            return;
+        }
+
+        if (usuarios.some((user) => user.email === email)) {
+            alert("Ya existe un usuario con este correo electrónico.");
             restoreButton();
             return;
         }
@@ -277,6 +296,7 @@
             },
             body: JSON.stringify({
                 username,
+                email,
                 password,
                 rol: "representante",
                 universidad,

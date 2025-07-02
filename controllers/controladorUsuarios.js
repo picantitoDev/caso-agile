@@ -14,7 +14,7 @@ async function crearUsuarioGet(req, res) {
 
 const crearUsuarioPost = async (req, res, next) => {
   try {
-    const { username, password, rol, universidad, ruc } = req.body
+    const { username, password, email, rol, universidad, ruc } = req.body
     console.log(username)
     console.log(password)
     console.log(universidad)
@@ -40,9 +40,15 @@ const crearUsuarioPost = async (req, res, next) => {
       }
     }
 
+        const existeEmail = await dbUsuarios.existeUsuarioPorEmail(email);
+    if (existeEmail) {
+      return res.status(400).send("Ya existe un usuario con este correo electrónico.");
+    }
+
     // Crea el usuario en la base de datos
     await dbUsuarios.insertarUsuario({
       username,
+      email,
       password,
       role: "representante", // Manejamos el rol que viene del formulario
       universidad, // Puedes pasar el ID de la universidad si es necesario
