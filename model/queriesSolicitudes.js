@@ -169,8 +169,19 @@ async function actualizarEvaluacion(id_solicitud, id_seccion, estado, observacio
   );
 }
 
-
-
+async function actualizarEstadoSolicitud(idSolicitud, nuevoEstado) {
+  try {
+    const query = `
+      UPDATE solicitud_acreditacion
+      SET estado = $1
+      WHERE id_solicitud = $2
+    `;
+    await pool.query(query, [nuevoEstado, idSolicitud]);
+  } catch (error) {
+    console.error("Error al actualizar el estado de la solicitud:", error);
+    throw error;
+  }
+}
 
 module.exports = {
   obtenerSecciones,
@@ -188,4 +199,5 @@ module.exports = {
   obtenerEvaluacionIndividual,
   insertarEvaluacion,
   actualizarEvaluacion,
+  actualizarEstadoSolicitud
 }

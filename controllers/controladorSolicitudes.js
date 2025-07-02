@@ -67,9 +67,23 @@ async function crearSolicitudPost(req, res) {
 async function gestionSolicitudesGet(req, res) {
   try {
     const solicitudes = await dbSolicitudes.obtenerSolicitudes()
-    
-    console.log(solicitudes)
+    const hoy = DateTime.now().setZone("America/Lima")
+
+    // Verifica si alguna solicitud venció y actualiza su estado si es necesario
+    await Promise.all(
+      solicitudes.map(async (solicitud) => {
+        const fechaCreacion = DateTime.fromJSDate(new Date(solicitud.fecha_creacion)).setZone("America/Lima")
+        const dias = hoy.diff(fechaCreacion, "days").days
+
+        if (dias >= 30 && solicitud.estado === "pendiente") {
+          await dbSolicitudes.actualizarEstadoSolicitud(solicitud.id_solicitud, "en_evaluacion")
+          solicitud.estado = "en_evaluacion" // actualizar en memoria
+        }
+      })
+    )
+
     res.render("solicitudes", { solicitudes })
+
   } catch (error) {
     console.error("Error al cargar formulario:", error)
     res.status(500).send("Error al cargar formulario")
@@ -78,36 +92,30 @@ async function gestionSolicitudesGet(req, res) {
 
 async function verSolicitudesUsuario(req, res) {
   try {
-    const idUsuario = req.user.id_usuario // Suponiendo que estás usando Passport.js y el usuario está autenticado
-    const solicitudes = await dbSolicitudes.obtenerSolicitudesPorUsuario(
-      idUsuario
+    const idUsuario = req.user.id_usuario
+    const solicitudes = await dbSolicitudes.obtenerSolicitudesPorUsuario(idUsuario)
+
+    const hoy = DateTime.now().setZone("America/Lima")
+
+    const solicitudesConDiferencia = await Promise.all(
+      solicitudes.map(async (solicitud) => {
+        const fechaCreacion = DateTime.fromJSDate(new Date(solicitud.fecha_creacion)).setZone("America/Lima")
+        const diferenciaDias = hoy.diff(fechaCreacion, "days").days
+        const vencida = diferenciaDias >= 30
+
+        // Si está vencida y aún está como "pendiente", la cambiamos a "en_evaluacion"
+        if (vencida && solicitud.estado === "pendiente") {
+          await dbSolicitudes.actualizarEstadoSolicitud(solicitud.id_solicitud, "en_evaluacion")
+          solicitud.estado = "en_evaluacion" // Actualizamos localmente también
+        }
+
+        return {
+          ...solicitud,
+          fechaCreacion: fechaCreacion.toFormat("dd/MM/yyyy HH:mm:ss"),
+          vencida,
+        }
+      })
     )
-
-    const solicitudesConDiferencia = solicitudes.map((solicitud) => {
-      const fechaCreacion = DateTime.fromJSDate(
-        new Date(solicitud.fecha_creacion)
-      ).setZone("America/Lima")
-      const hoy = DateTime.now().setZone("America/Lima")
-      // const diferenciaMinutos = hoy.diff(fechaCreacion, "minutes").minutes
-      // const vencida = diferenciaMinutos >= 15
-
-      // Calcular la diferencia en días
-      // Tengo un poquito de meyo
-      const diferenciaDias = hoy.diff(fechaCreacion, "days").days
-      const vencida = diferenciaDias >= 30
-
-      console.log("Hora actual servidor (UTC):", new Date().toISOString())
-      console.log(
-        "Hora actual Lima (Luxon):",
-        DateTime.now().setZone("America/Lima").toISO()
-      )
-
-      return {
-        ...solicitud,
-        fechaCreacion: fechaCreacion.toFormat("dd/MM/yyyy HH:mm:ss"),
-        vencida,
-      }
-    })
 
     res.render("userHome", {
       solicitudes: solicitudesConDiferencia,
