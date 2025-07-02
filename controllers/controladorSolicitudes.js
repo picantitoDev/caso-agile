@@ -1,6 +1,7 @@
 const dbUsuarios = require("../model/queriesUsuarios")
 const dbSolicitudes = require("../model/queriesSolicitudes")
 const { DateTime } = require("luxon")
+const nodemailer = require("nodemailer");
 
 const path = require('path')
 const fs = require('fs')
@@ -377,7 +378,37 @@ async function evaluarSeccionPost(req, res) {
       );
     }
 
-    // (Más adelante puedes aquí llamar a enviarCorreoNotificacionEnProceso())
+    // Enviar correo al usuario si se marcó como "En proceso"
+    if (estado === "En proceso") {
+      const solicitud = await dbSolicitudes.obtenerSolicitudPorId(id_solicitud);
+      const usuario = await dbUsuarios.buscarUsuarioPorId(solicitud.id_usuario);
+
+      if (usuario?.email) {
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: 'stockcloud.soporte@gmail.com',
+            pass: 'ktte cwnu eojo eaxt', // contraseña de aplicación
+          },
+        });
+
+        await transporter.sendMail({
+          from: 'stockcloud.soporte@gmail.com',
+          to: usuario.email,
+          subject: '🔔 Sección habilitada para nueva evidencia',
+          html: `
+            <p>Hola <strong>${usuario.username}</strong>,</p>
+            <p>Una sección de tu solicitud <strong>${solicitud.nombre_carrera}</strong> ha sido marcada como <strong>En proceso</strong>.</p>
+            <p>Puedes subir nueva evidencia en los próximos minutos desde tu panel.</p>
+            <p>Saludos,<br>Equipo de Acreditación</p>
+          `,
+        });
+
+        console.log(`📧 Correo enviado a ${usuario.email}`);
+      } else {
+        console.warn("⚠️ Usuario no tiene correo registrado");
+      }
+    }
 
     res.redirect(`/admin/solicitudes/${id_solicitud}`);
   } catch (error) {
