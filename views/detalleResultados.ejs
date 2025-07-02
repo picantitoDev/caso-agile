@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Resultados de Solicitud</title>
+    <link rel="stylesheet" href="/detalleSolicitudAdmin.css" />
+    <style>
+      .estado-evaluacion {
+        background-color: #f0f0f0;
+        padding: 10px;
+        margin-top: 10px;
+        border-left: 5px solid #9c27b0;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a class="back-btn" href="/user/home">← Atrás</a>
+      <h1>Resultados de la Solicitud</h1>
+      <div class="info-solicitud">
+        <p><strong>Universidad:</strong> <%= solicitud.nombre_universidad %></p>
+        <p><strong>Carrera:</strong> <%= solicitud.nombre_carrera %></p>
+        <p>
+          <strong>Fecha de Creación:</strong>
+          <%= new Date(solicitud.fecha_creacion).toLocaleDateString('es-PE', {
+            day: '2-digit', month: '2-digit', year: 'numeric'
+          }) %>
+        </p>
+      </div>
+    </header>
+
+    <main class="container">
+      <% secciones.forEach(seccion => { %>
+        <div class="seccion">
+          <h2><%= seccion.nombre.replace(/\b\w/g, c => c.toUpperCase()) %></h2>
+
+          <% const archivosSeccion = archivosPorSeccion.find(a =>
+              a.seccion.id_seccion === seccion.id_seccion); %> 
+
+          <% if (archivosSeccion && archivosSeccion.archivos.length > 0) { %>
+            <ul class="lista-archivos">
+              <% archivosSeccion.archivos.forEach(archivo => { %>
+              <li>
+                <span><%= archivo.nombre_archivo %> (<%= archivo.tipo_mime %>)</span>
+                <a
+                  href="/user/descargar-archivo/<%= archivo.id_archivo %>"
+                  class="btn-descargar"
+                  download
+                  >Descargar</a>
+              </li>
+              <% }) %>
+            </ul>
+          <% } else { %>
+            <p class="sin-archivos">No hay archivos subidos en esta sección.</p>
+          <% } %>
+
+          <% const evaluacion = evaluaciones.find(ev =>
+              ev.id_seccion === seccion.id_seccion &&
+              ev.id_solicitud === solicitud.id_solicitud) || null; %>
+
+          <% if (evaluacion) { %>
+            <div class="estado-evaluacion">
+              <p><strong>Estado de evaluación:</strong> <%= evaluacion.estado %></p>
+              <% if (evaluacion.observaciones) { %>
+                <p><strong>Observaciones:</strong> <%= evaluacion.observaciones %></p>
+              <% } %>
+            </div>
+          <% } else { %>
+            <p class="mensaje-evaluacion-pendiente">
+              Esta sección aún no ha sido evaluada.
+            </p>
+          <% } %>
+        </div>
+      <% }) %>
+    </main>
+  </body>
+</html>

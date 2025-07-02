@@ -49,12 +49,15 @@
                   <% } %>
                 </span>
                 <p>Fecha de creación: <%= solicitud.fechaCreacion %></p>
-                <form action="/user/solicitudes/<%= solicitud.id_solicitud %>" method="GET">
-                  <button class="action-btn <%= solicitud.vencida ? 'vencida' : '' %>"
-                    <%= solicitud.vencida ? 'disabled title="Esta solicitud ha vencido (más de 30 días)"' : '' %>>
-                    Gestionar
-                  </button>
-                </form>
+                  <% if (solicitud.estado === 'pendiente') { %>
+                    <form action="/user/solicitudes/<%= solicitud.id_solicitud %>" method="GET">
+                      <button class="action-btn">Gestionar</button>
+                    </form>
+                  <% } else if (solicitud.estado === 'en_evaluacion' || solicitud.estado === 'finalizada') { %>
+                    <form action="/user/solicitudes/<%= solicitud.id_solicitud %>/resultados" method="GET">
+                      <button class="action-btn">Ver resultados</button>
+                    </form>
+                  <% } %>
               </div>
             </div>
           <% }) %>

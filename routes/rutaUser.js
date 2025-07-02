@@ -25,4 +25,7 @@ router.post(
   controladorSolicitudes.eliminarArchivo
 )
 
+router.get('/solicitudes/:id/resultados', controladorSolicitudes.verResultadosSolicitud)
+router.get('/descargar-archivo/:id_archivo', controladorSolicitudes.descargarArchivoUsuario)
+
 module.exports = router

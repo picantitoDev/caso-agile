@@ -2,6 +2,10 @@ const dbUsuarios = require("../model/queriesUsuarios")
 const dbSolicitudes = require("../model/queriesSolicitudes")
 const { DateTime } = require("luxon")
 
+const path = require('path')
+const fs = require('fs')
+
+
 async function crearSolicitudGet(req, res) {
   try {
     const todosLosUsuarios = await dbUsuarios.obtenerUsuarios()
@@ -73,9 +77,9 @@ async function gestionSolicitudesGet(req, res) {
     await Promise.all(
       solicitudes.map(async (solicitud) => {
         const fechaCreacion = DateTime.fromJSDate(new Date(solicitud.fecha_creacion)).setZone("America/Lima")
-        const dias = hoy.diff(fechaCreacion, "days").days
+        const minutos = hoy.diff(fechaCreacion, "minutes").minutes;
 
-        if (dias >= 30 && solicitud.estado === "pendiente") {
+        if (minutos >= 2 && solicitud.estado === "pendiente") {
           await dbSolicitudes.actualizarEstadoSolicitud(solicitud.id_solicitud, "en_evaluacion")
           solicitud.estado = "en_evaluacion" // actualizar en memoria
         }
@@ -100,13 +104,13 @@ async function verSolicitudesUsuario(req, res) {
     const solicitudesConDiferencia = await Promise.all(
       solicitudes.map(async (solicitud) => {
         const fechaCreacion = DateTime.fromJSDate(new Date(solicitud.fecha_creacion)).setZone("America/Lima")
-        const diferenciaDias = hoy.diff(fechaCreacion, "days").days
-        const vencida = diferenciaDias >= 30
+        const diferenciaMinutos = hoy.diff(fechaCreacion, "minutes").minutes;
+        const vencida = diferenciaMinutos >= 2;
 
         // Si está vencida y aún está como "pendiente", la cambiamos a "en_evaluacion"
         if (vencida && solicitud.estado === "pendiente") {
           await dbSolicitudes.actualizarEstadoSolicitud(solicitud.id_solicitud, "en_evaluacion")
-          solicitud.estado = "en_evaluacion" // Actualizamos localmente también
+          solicitud.estado = "en_evaluacion"
         }
 
         return {
@@ -313,7 +317,77 @@ async function evaluarSeccionPost(req, res) {
   }
 }
 
+async function verResultadosSolicitud(req, res) {
+  try {
+    const id_solicitud = req.params.id;
 
+    // Obtener datos base
+    const secciones = await dbSolicitudes.obtenerSecciones();
+    const archivos = await dbSolicitudes.obtenerArchivosPorSolicitud(id_solicitud);
+    const evaluaciones = await dbSolicitudes.obtenerEvaluacionesPorSolicitud(id_solicitud);
+    const solicitud = await dbSolicitudes.obtenerSolicitudPorId(id_solicitud);
+
+    // Si la solicitud no existe o no pertenece al usuario autenticado, redirigir
+    if (!solicitud || solicitud.id_usuario !== req.user.id_usuario) {
+      return res.status(403).send("No autorizado para ver esta solicitud.");
+    }
+
+    // Estructurar archivos por sección para render
+    const archivosPorSeccion = secciones.map((seccion) => {
+      return {
+        seccion,
+        archivos: archivos.filter((archivo) => archivo.id_seccion === seccion.id_seccion),
+      };
+    });
+
+    res.render("detalleResultados", {
+      solicitud,
+      solicitudId: id_solicitud,
+      secciones,
+      archivosPorSeccion,
+      evaluaciones,
+      user: req.user,
+    });
+
+  } catch (error) {
+    console.error("Error al cargar resultados de solicitud:", error);
+    res.status(500).send("Error al cargar resultados de solicitud");
+  }
+}
+
+
+async function descargarArchivoUsuario(req, res) {
+  try {
+    const id_archivo = req.params.id_archivo
+
+    const archivo = await dbSolicitudes.obtenerArchivoPorId(id_archivo)
+    console.log({
+    esBuffer: Buffer.isBuffer(archivo.archivo),
+    tipo: typeof archivo.archivo,
+    longitud: archivo.archivo?.length
+  })
+    if (!archivo) {
+      return res.status(404).send("Archivo no encontrado.")
+    }
+
+    res.setHeader("Content-Type", archivo.tipo_mime)
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${archivo.nombre_archivo}"`
+    )
+
+    console.log({
+      nombre: archivo.nombre_archivo,
+      tipo: archivo.tipo_mime,
+      bufferLength: archivo.archivo?.length,
+      tipoReal: typeof archivo.archivo,
+    })
+    res.end(archivo.archivo) // 'archivo' es el campo tipo bytea
+  } catch (error) {
+    console.error("Error al descargar archivo:", error)
+    res.status(500).send("Error al descargar archivo.")
+  }
+}
 
 module.exports = {
   crearSolicitudGet,
@@ -325,5 +399,7 @@ module.exports = {
   gestionDetalleSolicitudGet,
   descargarArchivo,
   eliminarArchivo,
-  evaluarSeccionPost
+  evaluarSeccionPost,
+  verResultadosSolicitud,
+  descargarArchivoUsuario
 }
