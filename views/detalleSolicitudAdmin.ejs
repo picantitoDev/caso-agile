@@ -50,7 +50,16 @@
               ev.id_solicitud === solicitud.id_solicitud) || {}; %>
 
           <% if (solicitud.estado === 'en_evaluacion') { %>
-<% const deshabilitado = evaluacion.estado === 'Logrado' || evaluacion.estado === 'No logrado' %>
+<%
+  const fechaHabilitacion = evaluacion.fecha_habilitacion ? new Date(evaluacion.fecha_habilitacion) : null;
+  const ahora = new Date();
+  const diasRestantes = fechaHabilitacion ? (7 - Math.floor((ahora - fechaHabilitacion) / (1000 * 60 * 60 * 24))) : 0;
+
+  const seccionBloqueada =
+    evaluacion.estado === 'En proceso' && fechaHabilitacion && diasRestantes > 0;
+
+  const deshabilitado = evaluacion.estado === 'Logrado' || evaluacion.estado === 'No logrado' || seccionBloqueada;
+%>
 <% const claseEstado =
   evaluacion.estado === 'Logrado'
     ? 'evaluacion-logrado'
@@ -58,6 +67,13 @@
     ? 'evaluacion-no-logrado'
     : '' %>
 
+<% if (seccionBloqueada) { %>
+  <div class="alerta-bloqueada">
+    ⚠️ Esta sección fue marcada como "En proceso". El usuario puede subir nueva evidencia hasta el 
+    <strong><%= new Date(fechaHabilitacion.getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('es-PE') %></strong>. 
+    No se puede evaluar hasta entonces.
+  </div>
+<% } %>
 <form 
   method="POST" 
   action="/admin/evaluar/<%= solicitud.id_solicitud %>/<%= seccion.id_seccion %>" 

@@ -68,8 +68,13 @@
             p.slice(1)) .join(' ') %>
           </h2>
 
-          <% const archivosSeccion = archivosPorSeccion.find(a =>
-          a.seccion.id_seccion === seccion.id_seccion); %> <% if
+<% 
+  const seccionData = archivosPorSeccion.find(a => a.seccion.id_seccion === seccion.id_seccion);
+  const archivosSeccion = seccionData || { archivos: [] };
+  const editable = seccionData?.editable;
+%>
+          
+          <% if
           (archivosSeccion && archivosSeccion.archivos.length > 0) { %>
           <div class="archivos-subidos">
             <h3>Archivos subidos:</h3>
@@ -77,13 +82,15 @@
               <% archivosSeccion.archivos.forEach(archivo => { %>
               <li>
                 <%= archivo.nombre_archivo %>
-                <button
-                  type="button"
-                  class="btn-eliminar"
-                  onclick="eliminarArchivo(`<%= archivo.id_archivo %>`)"
-                >
-                  Eliminar
-                </button>
+<% if (editable) { %>
+  <button
+    type="button"
+    class="btn-eliminar"
+    onclick="eliminarArchivo('<%= archivo.id_archivo %>')"
+  >
+    Eliminar
+  </button>
+<% } %>
               </li>
               <% }) %>
             </ul>
@@ -95,15 +102,21 @@
           <label for="archivo-<%= seccion.id_seccion %>"
             >Subir archivo(s):</label
           >
-          <input
-            type="file"
-            id="archivo-<%= seccion.id_seccion %>"
-            name="archivos[<%= seccion.id_seccion %>][]"
-            multiple
-            accept=".pdf"
-            data-id="<%= seccion.id_seccion %>"
-            class="input-archivos"
-          />
+<% if (editable) { %>
+  <label for="archivo-<%= seccion.id_seccion %>">Subir archivo(s):</label>
+  <input
+    type="file"
+    id="archivo-<%= seccion.id_seccion %>"
+    name="archivos[<%= seccion.id_seccion %>][]"
+    multiple
+    accept=".pdf"
+    data-id="<%= seccion.id_seccion %>"
+    class="input-archivos"
+  />
+  <div id="preview-<%= seccion.id_seccion %>" class="archivos-nuevos"></div>
+<% } else { %>
+  <p><em>Actualmente esta sección no está habilitada para subir archivos.</em></p>
+<% } %>
 
           <div
             id="preview-<%= seccion.id_seccion %>"

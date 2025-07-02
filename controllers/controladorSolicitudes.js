@@ -103,23 +103,36 @@ async function verSolicitudesUsuario(req, res) {
 
     const solicitudesConDiferencia = await Promise.all(
       solicitudes.map(async (solicitud) => {
-        const fechaCreacion = DateTime.fromJSDate(new Date(solicitud.fecha_creacion)).setZone("America/Lima")
+        const fechaCreacion = DateTime.fromJSDate(new Date(solicitud.fecha_creacion)).setZone("America/Lima");
         const diferenciaMinutos = hoy.diff(fechaCreacion, "minutes").minutes;
         const vencida = diferenciaMinutos >= 2;
 
-        // Si está vencida y aún está como "pendiente", la cambiamos a "en_evaluacion"
         if (vencida && solicitud.estado === "pendiente") {
-          await dbSolicitudes.actualizarEstadoSolicitud(solicitud.id_solicitud, "en_evaluacion")
-          solicitud.estado = "en_evaluacion"
+          await dbSolicitudes.actualizarEstadoSolicitud(solicitud.id_solicitud, "en_evaluacion");
+          solicitud.estado = "en_evaluacion";
+        }
+
+        // Si está en evaluación, revisar si hay alguna sección habilitada
+        let seccionesHabilitadas = false;
+
+        if (solicitud.estado === "en_evaluacion") {
+          const evaluaciones = await dbSolicitudes.obtenerEvaluacionesPorSolicitud(solicitud.id_solicitud);
+
+          seccionesHabilitadas = evaluaciones.some((ev) => {
+            if (ev.estado !== "En proceso" || !ev.fecha_habilitacion) return false;
+            const fecha = DateTime.fromJSDate(ev.fecha_habilitacion).setZone("America/Lima");
+            return hoy.diff(fecha, "days").days < 7;
+          });
         }
 
         return {
           ...solicitud,
           fechaCreacion: fechaCreacion.toFormat("dd/MM/yyyy HH:mm:ss"),
           vencida,
-        }
+          seccionesHabilitadas
+        };
       })
-    )
+    );
 
     res.render("userHome", {
       solicitudes: solicitudesConDiferencia,
@@ -130,44 +143,82 @@ async function verSolicitudesUsuario(req, res) {
     res.status(500).send("Error al obtener solicitudes")
   }
 }
-
 async function verDetalleSolicitud(req, res) {
   try {
-    const id_solicitud = req.params.id
+    const id_solicitud = req.params.id;
+    const id_usuario = req.user.id_usuario;
 
-    // Obtener lista de secciones (9 predefinidas)
-    const secciones = await dbSolicitudes.obtenerSecciones()
+    const solicitud = await dbSolicitudes.obtenerSolicitudPorId(id_solicitud);
+    if (!solicitud || solicitud.id_usuario !== id_usuario) {
+      return res.status(403).send("No autorizado para ver esta solicitud");
+    }
 
-    // Obtener archivos ya subidos para esta solicitud
-    const archivos = await dbSolicitudes.obtenerArchivosPorSolicitud(
-      id_solicitud
-    )
+    // Si no está en estado "pendiente", validamos si tiene secciones habilitadas
+    if (solicitud.estado !== "pendiente") {
+      const evaluaciones = await dbSolicitudes.obtenerEvaluacionesPorSolicitud(id_solicitud);
 
+      const haySeccionHabilitada = evaluaciones.some(ev => {
+        if (ev.estado !== "En proceso" || !ev.fecha_habilitacion) return false;
+
+        const fecha = DateTime.fromJSDate(ev.fecha_habilitacion).setZone("America/Lima");
+        const ahora = DateTime.now().setZone("America/Lima");
+
+        return ahora.diff(fecha, "days").days < 7;
+      });
+
+      if (!haySeccionHabilitada) {
+        return res.redirect(`/user/solicitudes/${id_solicitud}/resultados`);
+      }
+    }
+
+    // Continuar con carga normal
+    const secciones = await dbSolicitudes.obtenerSecciones();
+    const archivos = await dbSolicitudes.obtenerArchivosPorSolicitud(id_solicitud);
     const evaluaciones = await dbSolicitudes.obtenerEvaluacionesPorSolicitud(id_solicitud);
 
-    // Mapear archivos por sección para facilitar el renderizado
-    const archivosPorSeccion = secciones.map((seccion) => {
-      return {
-        seccion,
-        archivos:
-          archivos.filter(
-            (archivo) => archivo.id_seccion === seccion.id_seccion
-          ) || [],
-      }
-    })
+const archivosPorSeccion = secciones.map((seccion) => {
+  const archivosSeccion = archivos.filter((a) => a.id_seccion === seccion.id_seccion);
+
+  // Buscar la evaluación correspondiente
+  const evaluacion = evaluaciones.find(ev =>
+    ev.id_seccion === seccion.id_seccion &&
+    ev.id_solicitud === solicitud.id_solicitud
+  );
+
+  let editable = false;
+
+  if (solicitud.estado === "pendiente") {
+    editable = true;
+  } else if (
+    evaluacion &&
+    evaluacion.estado === "En proceso" &&
+    evaluacion.fecha_habilitacion
+  ) {
+    const fecha = DateTime.fromJSDate(evaluacion.fecha_habilitacion).setZone("America/Lima");
+    const ahora = DateTime.now().setZone("America/Lima");
+    editable = ahora.diff(fecha, "days").days < 7;
+  }
+
+  return {
+    seccion,
+    archivos: archivosSeccion,
+    editable, // ← esto faltaba
+  };
+});
 
     res.render("detalleSolicitud", {
       solicitudId: id_solicitud,
       secciones,
       archivosPorSeccion,
       user: req.user,
-      evaluaciones
-    })
+      evaluaciones,
+    });
   } catch (error) {
-    console.error("Error al cargar detalle:", error)
-    res.status(500).send("Error al cargar detalle de solicitud")
+    console.error("Error al cargar detalle:", error);
+    res.status(500).send("Error al cargar detalle de solicitud");
   }
 }
+
 
 // controllers/controladorSolicitudes.js
 async function guardarCambios(req, res) {
@@ -289,26 +340,42 @@ async function eliminarArchivo(req, res) {
 
 // EVALUACIONES
 
+
 async function evaluarSeccionPost(req, res) {
   const { id_solicitud, id_seccion } = req.params;
   const { estado, observaciones } = req.body;
 
   try {
-    // Validar entrada mínima
     if (!["Logrado", "En proceso", "No logrado"].includes(estado)) {
       return res.status(400).send("Estado no válido.");
     }
 
-    // Ver si ya existe una evaluación previa
     const existente = await dbSolicitudes.obtenerEvaluacionIndividual(id_solicitud, id_seccion);
 
-    if (existente) {
-      // Si ya existe, actualizamos
-      await dbSolicitudes.actualizarEvaluacion(id_solicitud, id_seccion, estado, observaciones);
-    } else {
-      // Si no existe, insertamos nueva evaluación
-      await dbSolicitudes.insertarEvaluacion(id_solicitud, id_seccion, estado, observaciones);
+    let fecha_habilitacion = null;
+    if (estado === "En proceso") {
+      fecha_habilitacion = DateTime.now().setZone("America/Lima").toJSDate();
     }
+
+    if (existente) {
+      await dbSolicitudes.actualizarEvaluacion(
+        id_solicitud,
+        id_seccion,
+        estado,
+        observaciones,
+        fecha_habilitacion
+      );
+    } else {
+      await dbSolicitudes.insertarEvaluacion(
+        id_solicitud,
+        id_seccion,
+        estado,
+        observaciones,
+        fecha_habilitacion
+      );
+    }
+
+    // (Más adelante puedes aquí llamar a enviarCorreoNotificacionEnProceso())
 
     res.redirect(`/admin/solicitudes/${id_solicitud}`);
   } catch (error) {
