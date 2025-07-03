@@ -1,137 +1,149 @@
-  <!DOCTYPE html>
-  <html lang="es">
-    <head>
-      <meta charset="UTF-8" />
-      <title>Detalle de Solicitud</title>
-      <link rel="stylesheet" href="/detalleSolicitudAdmin.css" />
-    </head>
-    <body>
-      <header>
-        <a class="back-btn" href="/admin/solicitudes">← Atrás</a>
-        <h1>Detalle de Solicitud</h1>
-        <div class="info-solicitud">
-          <p><strong>Universidad:</strong> <%= solicitud.nombre_universidad %></p>
-          <p><strong>Carrera:</strong> <%= solicitud.nombre_carrera %></p>
-          <p>
-            <strong>Fecha de Creación:</strong>
-            <%= new Date(solicitud.fecha_creacion).toLocaleDateString('es-PE', {
-            day: '2-digit', month: '2-digit', year: 'numeric' }) %>
-          </p>
-        </div>
-      </header>
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Detalle de Solicitud</title>
+    <link rel="stylesheet" href="/detalleSolicitudAdmin.css" />
+  </head>
+  <body>
+    <header>
+      <a class="back-btn" href="/admin/solicitudes">← Atrás</a>
+      <h1>Detalle de Solicitud</h1>
+      <div class="info-solicitud">
+        <p><strong>Universidad:</strong> <%= solicitud.nombre_universidad %></p>
+        <p><strong>Carrera:</strong> <%= solicitud.nombre_carrera %></p>
+        <p>
+          <strong>Fecha de Creación:</strong>
+          <%= new Date(solicitud.fecha_creacion).toLocaleDateString('es-PE', {
+          day: '2-digit', month: '2-digit', year: 'numeric' }) %>
+        </p>
+      </div>
+    </header>
 
-      <main class="container">
-        <% secciones.forEach(seccion => { %>
-          <div class="seccion">
-            <h2><%= seccion.nombre.replace(/\b\w/g, c => c.toUpperCase()) %></h2>
+    <main class="container">
+      <% secciones.forEach(seccion => { %>
+        <div class="seccion">
+          <h2><%= seccion.nombre.replace(/\b\w/g, c => c.toUpperCase()) %></h2>
 
-            <% const archivosSeccion = archivosPorSeccion.find(a =>
-                a.seccion.id_seccion === seccion.id_seccion); %> 
+          <% const archivosSeccion = archivosPorSeccion.find(a =>
+              a.seccion.id_seccion === seccion.id_seccion); %> 
 
-            <% if (archivosSeccion && archivosSeccion.archivos.length > 0) { %>
-              <ul class="lista-archivos">
-                <% archivosSeccion.archivos.forEach(archivo => { %>
-                <li>
-                  <span><%= archivo.nombre_archivo %> (<%= archivo.tipo_mime %>)</span>
-                  <a
-                    href="/admin/descargar-archivo/<%= archivo.id_archivo %>"
-                    class="btn-descargar"
-                    download
-                    >Descargar</a>
-                </li>
-                <% }) %>
-              </ul>
-            <% } else { %>
-              <p class="sin-archivos">No hay archivos subidos en esta sección.</p>
-            <% } %>
+          <% if (archivosSeccion && archivosSeccion.archivos.length > 0) { %>
+            <ul class="lista-archivos">
+              <% archivosSeccion.archivos.forEach(archivo => { %>
+              <li>
+                <span><%= archivo.nombre_archivo %> (<%= archivo.tipo_mime %>)</span>
+                <a
+                  href="/admin/descargar-archivo/<%= archivo.id_archivo %>"
+                  class="btn-descargar"
+                  download
+                >Descargar</a>
+              </li>
+              <% }) %>
+            </ul>
+          <% } else { %>
+            <p class="sin-archivos">No hay archivos subidos en esta sección.</p>
+          <% } %>
 
-            <% const evaluacion = evaluaciones.find(ev =>
-                ev.id_seccion === seccion.id_seccion &&
-                ev.id_solicitud === solicitud.id_solicitud) || {}; %>
+          <% const evaluacion = evaluaciones.find(ev =>
+              ev.id_seccion === seccion.id_seccion &&
+              ev.id_solicitud === solicitud.id_solicitud) || {}; %>
 
-            <% if (solicitud.estado === 'en_evaluacion') { %>
-  <%
-    const fechaHabilitacion = evaluacion.fecha_habilitacion ? new Date(evaluacion.fecha_habilitacion) : null;
-    const ahora = new Date();
-const minutosRestantes = fechaHabilitacion
-  ? (3 - Math.floor((ahora - fechaHabilitacion) / (1000 * 60)))
-  : 0;
+          <% if (solicitud.estado === 'en_evaluacion') { %>
+<%
+  const fechaHabilitacion = evaluacion.fecha_habilitacion ? new Date(evaluacion.fecha_habilitacion) : null;
+  const ahora = new Date();
+  const minutosRestantes = fechaHabilitacion
+    ? (3 - Math.floor((ahora - fechaHabilitacion) / (1000 * 60)))
+    : 0;
 
-const seccionBloqueada =
-  evaluacion.estado === 'En proceso' && fechaHabilitacion && minutosRestantes > 0;
+  const vecesEnProceso = evaluacion.veces_en_proceso || 0;
+  const seccionBloqueadaTiempo =
+    evaluacion.estado === 'En proceso' && fechaHabilitacion && minutosRestantes > 0;
 
-    const deshabilitado = evaluacion.estado === 'Logrado' || evaluacion.estado === 'No logrado' || seccionBloqueada;
-  %>
-  <% const claseEstado =
-    evaluacion.estado === 'Logrado'
-      ? 'evaluacion-logrado'
-      : evaluacion.estado === 'No logrado'
-      ? 'evaluacion-no-logrado'
-      : '' %>
+  const seccionBloqueadaFinal =
+    evaluacion.estado === 'En proceso' && vecesEnProceso >= 2;
 
-  <% if (seccionBloqueada) { %>
-    <div class="alerta-bloqueada">
-      ⚠️ Esta sección fue marcada como "En proceso". El usuario puede subir nueva evidencia hasta las 
-<strong><%= new Date(fechaHabilitacion.getTime() + 3 * 60 * 1000).toLocaleTimeString('es-PE') %></strong>.
+  const deshabilitado =
+    evaluacion.estado === 'Logrado' ||
+    evaluacion.estado === 'No logrado' ||
+    seccionBloqueadaTiempo ||
+    seccionBloqueadaFinal;
+%>
+<% const claseEstado =
+  evaluacion.estado === 'Logrado'
+    ? 'evaluacion-logrado'
+    : evaluacion.estado === 'No logrado'
+    ? 'evaluacion-no-logrado'
+    : evaluacion.estado === 'En proceso'
+    ? 'evaluacion-en-proceso'
+    : '' %>
 
-      No se puede evaluar hasta entonces.
-    </div>
+<% if (seccionBloqueadaTiempo) { %>
+  <div class="alerta-bloqueada">
+    ⚠️ Esta sección fue marcada como "En proceso". El usuario puede subir nueva evidencia hasta las 
+    <strong><%= new Date(fechaHabilitacion.getTime() + 3 * 60 * 1000).toLocaleTimeString('es-PE') %></strong>.
+    No se puede evaluar hasta entonces.
+  </div>
+<% } %>
+
+<% if (seccionBloqueadaFinal) { %>
+  <div class="alerta-bloqueada" style="background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404;">
+    ⚠️ Esta sección ya fue marcada dos veces como "En proceso" y no puede volver a ser editada.
+  </div>
+<% } %>
+
+<form 
+  method="POST" 
+  action="/admin/evaluar/<%= solicitud.id_solicitud %>/<%= seccion.id_seccion %>" 
+  class="form-evaluacion <%= claseEstado %>"
+>
+  <label for="estado-<%= seccion.id_seccion %>"><strong>Evaluación:</strong></label>
+  <select name="estado" id="estado-<%= seccion.id_seccion %>" required <%= deshabilitado ? "disabled" : "" %>>
+    <option value="">Seleccione evaluación</option>
+    <option value="Logrado" <%= evaluacion.estado === 'Logrado' ? 'selected' : '' %>>Logrado</option>
+    <option value="En proceso" <%= evaluacion.estado === 'En proceso' ? 'selected' : '' %>>En proceso</option>
+    <option value="No logrado" <%= evaluacion.estado === 'No logrado' ? 'selected' : '' %>>No logrado</option>
+  </select>
+
+  <label for="observaciones-<%= seccion.id_seccion %>">Observaciones:</label>
+  <textarea
+    id="observaciones-<%= seccion.id_seccion %>"
+    name="observaciones"
+    rows="2"
+    placeholder="Comentarios del evaluador..."
+    <%= deshabilitado ? "disabled" : "" %>
+  ><%= evaluacion.observaciones || '' %></textarea>
+
+  <% if (!deshabilitado) { %>
+    <button type="submit" class="btn-guardar">Guardar Evaluación</button>
   <% } %>
-  <form 
-    method="POST" 
-    action="/admin/evaluar/<%= solicitud.id_solicitud %>/<%= seccion.id_seccion %>" 
-    class="form-evaluacion <%= claseEstado %>"
-  >
-    <label for="estado-<%= seccion.id_seccion %>"><strong>Evaluación:</strong></label>
-    <select name="estado" id="estado-<%= seccion.id_seccion %>" required <%= deshabilitado ? "disabled" : "" %>>
-      <option value="">Seleccione evaluación</option>
-      <option value="Logrado" <%= evaluacion.estado === 'Logrado' ? 'selected' : '' %>>Logrado</option>
-      <option value="En proceso" <%= evaluacion.estado === 'En proceso' ? 'selected' : '' %>>En proceso</option>
-      <option value="No logrado" <%= evaluacion.estado === 'No logrado' ? 'selected' : '' %>>No logrado</option>
-    </select>
+</form>
 
-    <label for="observaciones-<%= seccion.id_seccion %>">Observaciones:</label>
-    <textarea
-      id="observaciones-<%= seccion.id_seccion %>"
-      name="observaciones"
-      rows="2"
-      placeholder="Comentarios del evaluador..."
-      <%= deshabilitado ? "disabled" : "" %>
-    ><%= evaluacion.observaciones || '' %></textarea>
+          <% } else { %>
+            <p class="mensaje-evaluacion-pendiente">
+              🕒 Esta solicitud aún está en proceso. La evaluación estará disponible después de los 30 días.
+            </p>
+          <% } %>
+        </div>
+      <% }) %>
+    </main>
 
-    <% if (!deshabilitado) { %>
-      <button type="submit" class="btn-guardar">Guardar Evaluación</button>
-    <% } %>
-  </form>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const formularios = document.querySelectorAll(".form-evaluacion");
 
-            <% } else { %>
-              <p class="mensaje-evaluacion-pendiente">
-                🕒 Esta solicitud aún está en proceso. La evaluación estará disponible después de los 30 días.
-              </p>
-            <% } %>
-          </div>
-        <% }) %>
-      </main>
-
-      <script>
-    // Esperar a que el DOM esté listo
-    document.addEventListener("DOMContentLoaded", function () {
-      const formularios = document.querySelectorAll(".form-evaluacion");
-
-      formularios.forEach(form => {
-        form.addEventListener("submit", function (e) {
-          const btn = form.querySelector("button[type='submit']");
-          btn.disabled = true;
-          btn.textContent = "Guardando...";
-
-          // Mostrar el alert luego de un pequeño delay para que la redirección no lo cancele
-          setTimeout(() => {
-            alert("✅ Evaluación guardada correctamente");
-          }, 100);
+        formularios.forEach(form => {
+          form.addEventListener("submit", function (e) {
+            const btn = form.querySelector("button[type='submit']");
+            btn.disabled = true;
+            btn.textContent = "Guardando...";
+            setTimeout(() => {
+              alert("✅ Evaluación guardada correctamente");
+            }, 100);
+          });
         });
       });
-    });
-  </script>
-
-    </body>
-  </html>
+    </script>
+  </body>
+</html>
