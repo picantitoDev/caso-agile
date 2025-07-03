@@ -507,6 +507,17 @@ async function verResultadosSolicitud(req, res) {
       };
     });
 
+    console.log("DEBUG:");
+    console.log({
+      todasEvaluadas,
+      algunaEnProcesoEditable,
+      evaluaciones: evaluaciones.map(ev => ({
+        id_seccion: ev.id_seccion,
+        estado: ev.estado,
+        veces_en_proceso: ev.veces_en_proceso
+      }))
+    });
+
     res.render("detalleResultados", {
       solicitud,
       solicitudId: id_solicitud,
