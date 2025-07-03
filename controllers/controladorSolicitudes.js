@@ -99,7 +99,7 @@ async function verSolicitudesUsuario(req, res) {
   try {
     const idUsuario = req.user.id_usuario;
     const solicitudes = await dbSolicitudes.obtenerSolicitudesPorUsuario(idUsuario);
-
+    const secciones = await dbSolicitudes.obtenerSecciones();
     const hoy = DateTime.now().setZone("America/Lima");
 
     const solicitudesConDiferencia = await Promise.all(
@@ -108,30 +108,40 @@ async function verSolicitudesUsuario(req, res) {
         const diferenciaMinutos = hoy.diff(fechaCreacion, "minutes").minutes;
         const vencida = diferenciaMinutos >= 2;
 
-        // Si está vencida y aún pendiente, cambiar a en_evaluacion
         if (vencida && solicitud.estado === "pendiente") {
           await dbSolicitudes.actualizarEstadoSolicitud(solicitud.id_solicitud, "en_evaluacion");
           solicitud.estado = "en_evaluacion";
         }
 
+        // Si está en evaluación, revisar si hay alguna sección habilitada o evaluaciones completas
         let seccionesHabilitadas = false;
         let evaluacionesCompletas = false;
 
         if (solicitud.estado === "en_evaluacion") {
           const evaluaciones = await dbSolicitudes.obtenerEvaluacionesPorSolicitud(solicitud.id_solicitud);
 
-          // Habilitada si hay alguna en proceso con fecha válida y es el primer intento
-          seccionesHabilitadas = evaluaciones.some((ev) => {
-            if (ev.estado !== "En proceso" || !ev.fecha_habilitacion || ev.veces_en_proceso !== 1) return false;
+          seccionesHabilitadas = evaluaciones.some(ev => {
+            if (ev.estado !== "En proceso" || !ev.fecha_habilitacion) return false;
             const fecha = DateTime.fromJSDate(ev.fecha_habilitacion).setZone("America/Lima");
             return hoy.diff(fecha, "minutes").minutes < 3;
           });
 
-          // Completamente evaluada si hay 9 secciones y todas están evaluadas con Logrado o No logrado
-          const todasEvaluadas = evaluaciones.length === 9 &&
-            evaluaciones.every(ev => ev.estado === "Logrado" || ev.estado === "No logrado");
+          // ✅ Evaluaciones completas si:
+          // - todas las secciones están evaluadas con Logrado, No logrado o En proceso
+          // - ninguna sección "En proceso" es editable (menos de 2 veces)
+          const todasEvaluadas = secciones.every(seccion => {
+            const ev = evaluaciones.find(e => 
+              e.id_seccion === seccion.id_seccion &&
+              e.id_solicitud === solicitud.id_solicitud
+            );
+            return ev && ["Logrado", "No logrado", "En proceso"].includes(ev.estado);
+          });
 
-          evaluacionesCompletas = todasEvaluadas;
+          const algunaEditable = evaluaciones.some(ev =>
+            ev.estado === "En proceso" && (ev.veces_en_proceso ?? 0) < 2
+          );
+
+          evaluacionesCompletas = todasEvaluadas && !algunaEditable;
         }
 
         return {
@@ -139,7 +149,7 @@ async function verSolicitudesUsuario(req, res) {
           fechaCreacion: fechaCreacion.toFormat("dd/MM/yyyy HH:mm:ss"),
           vencida,
           seccionesHabilitadas,
-          evaluacionesCompletas
+          evaluacionesCompletas,
         };
       })
     );
@@ -148,12 +158,12 @@ async function verSolicitudesUsuario(req, res) {
       solicitudes: solicitudesConDiferencia,
       user: req.user,
     });
-
   } catch (error) {
     console.error("Error al obtener solicitudes:", error);
     res.status(500).send("Error al obtener solicitudes");
   }
 }
+
 
 async function verDetalleSolicitud(req, res) {
   try {
@@ -465,6 +475,8 @@ async function evaluarSeccionPost(req, res) {
 }
 
 async function verResultadosSolicitud(req, res) {
+    console.log("🧠 Entrando a verResultadosSolicitud... ID:", req.params.id);
+
   try {
     const id_solicitud = req.params.id;
 
@@ -480,18 +492,27 @@ async function verResultadosSolicitud(req, res) {
     }
 
     // ✅ Verificar si todas las secciones tienen evaluación válida (incluye En proceso)
-    const todasEvaluadas = secciones.every(seccion => {
-      const ev = evaluaciones.find(e => 
-        e.id_seccion === seccion.id_seccion && 
-        e.id_solicitud === id_solicitud
-      );
-      return ev && ["Logrado", "No logrado", "En proceso"].includes(ev.estado);
-    });
+const idSolicitudInt = parseInt(id_solicitud, 10); // <-- ¡Este es el fix!
+
+const todasEvaluadas = secciones.every(seccion => {
+  const ev = evaluaciones.find(e => 
+    e.id_seccion === seccion.id_seccion &&
+    e.id_solicitud === idSolicitudInt
+  );
+  return ev && ["Logrado", "No logrado", "En proceso"].includes(ev.estado);
+});
 
     // ⚠️ Revisar si alguna sección "En proceso" aún puede editarse
     const algunaEnProcesoEditable = evaluaciones.some(ev =>
       ev.estado === "En proceso" && (ev.veces_en_proceso ?? 0) < 2
     );
+
+    console.log("🔍 Evaluaciones crudas:");
+console.log(evaluaciones.map(ev => ({
+  id_seccion: ev.id_seccion,
+  estado: ev.estado,
+  veces_en_proceso: ev.veces_en_proceso
+})));
 
     // Bloquear si falta evaluación o aún hay secciones En proceso editables
     if (!todasEvaluadas || algunaEnProcesoEditable) {
