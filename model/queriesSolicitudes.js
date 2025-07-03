@@ -152,23 +152,27 @@ async function obtenerEvaluacionIndividual(id_solicitud, id_seccion) {
 }
 
 // Insertar nueva evaluación
-async function insertarEvaluacion(id_solicitud, id_seccion, estado, observaciones, fecha_habilitacion = null) {
-  await pool.query(
-    `INSERT INTO evaluacion_seccion 
-      (id_solicitud, id_seccion, estado, observaciones, fecha_habilitacion)
-     VALUES ($1, $2, $3, $4, $5)`,
-    [id_solicitud, id_seccion, estado, observaciones, fecha_habilitacion]
-  );
+async function insertarEvaluacion(id_solicitud, id_seccion, estado, observaciones, fecha_habilitacion, veces_en_proceso = 0) {
+  const query = `
+    INSERT INTO evaluacion_seccion (id_solicitud, id_seccion, estado, observaciones, fecha_habilitacion, veces_en_proceso)
+    VALUES ($1, $2, $3, $4, $5, $6)
+  `;
+  const values = [id_solicitud, id_seccion, estado, observaciones, fecha_habilitacion, veces_en_proceso];
+  await pool.query(query, values);
 }
 
 // Actualizar evaluación existente
-async function actualizarEvaluacion(id_solicitud, id_seccion, estado, observaciones, fecha_habilitacion = null) {
-  await pool.query(
-    `UPDATE evaluacion_seccion 
-     SET estado = $3, observaciones = $4, fecha_habilitacion = $5
-     WHERE id_solicitud = $1 AND id_seccion = $2`,
-    [id_solicitud, id_seccion, estado, observaciones, fecha_habilitacion]
-  );
+async function actualizarEvaluacion(id_solicitud, id_seccion, estado, observaciones, fecha_habilitacion = null, veces_en_proceso = 0) {
+  const query = `
+    UPDATE evaluacion_seccion
+    SET estado = $3,
+        observaciones = $4,
+        fecha_habilitacion = $5,
+        veces_en_proceso = $6
+    WHERE id_solicitud = $1 AND id_seccion = $2
+  `;
+  const values = [id_solicitud, id_seccion, estado, observaciones, fecha_habilitacion, veces_en_proceso];
+  await pool.query(query, values);
 }
 
 async function actualizarEstadoSolicitud(idSolicitud, nuevoEstado) {

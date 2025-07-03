@@ -27,6 +27,11 @@
   border-radius: 4px;
 }
 
+.estado-en-proceso {
+  background-color: #fff8e1;
+  border-left: 5px solid #ffca28;
+}
+
 .estado-logrado {
   background-color: #e8f5e9;
   border-left: 5px solid #4caf50;
@@ -89,12 +94,12 @@
               ev.id_solicitud === solicitud.id_solicitud) || null; %>
 
           <% if (evaluacion) { 
-                const claseEstado =
-                evaluacion.estado === 'Logrado'
-                    ? 'estado-logrado'
-                    : evaluacion.estado === 'No logrado'
-                    ? 'estado-no-logrado'
-                    : 'estado-evaluacion'
+const claseEstado =
+  evaluacion.estado === 'Logrado'
+    ? 'estado-logrado'
+    : evaluacion.estado === 'No logrado'
+    ? 'estado-no-logrado'
+    : 'estado-en-proceso';
                     %>
 <div class="<%= claseEstado %>">
             <p><strong>Estado de evaluación:</strong> <%= evaluacion.estado %></p>

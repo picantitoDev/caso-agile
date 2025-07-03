@@ -49,15 +49,19 @@
                   <% } %>
                 </span>
                 <p>Fecha de creación: <%= solicitud.fechaCreacion %></p>
-<% if (solicitud.estado === 'pendiente' || solicitud.seccionesHabilitadas) { %>
-  <form action="/user/solicitudes/<%= solicitud.id_solicitud %>" method="GET">
-    <button class="action-btn">Gestionar</button>
-  </form>
-<% } else { %>
-  <form action="/user/solicitudes/<%= solicitud.id_solicitud %>/resultados" method="GET">
-    <button class="action-btn">Ver resultados</button>
-  </form>
-<% } %>
+
+            <% if (solicitud.estado === 'pendiente' || solicitud.seccionesHabilitadas) { %>
+              <form action="/user/solicitudes/<%= solicitud.id_solicitud %>" method="GET">
+                <button class="action-btn">Gestionar</button>
+              </form>
+            <% } else if (solicitud.estado === 'en_evaluacion' && solicitud.evaluacionesCompletas) { %>
+              <form action="/user/solicitudes/<%= solicitud.id_solicitud %>/resultados" method="GET">
+                <button class="action-btn">Ver resultados</button>
+              </form>
+            <% } else { %>
+              <button class="action-btn vencida" disabled>En revisión</button>
+            <% } %>
+
               </div>
             </div>
           <% }) %>
