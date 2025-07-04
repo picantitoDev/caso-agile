@@ -49,7 +49,7 @@
               ev.id_seccion === seccion.id_seccion &&
               ev.id_solicitud === solicitud.id_solicitud) || {}; %>
 
-          <% if (solicitud.estado === 'en_evaluacion') { %>
+          <% if (solicitud.estado === 'en_evaluacion' || solicitud.estado === 'finalizada') { %>
 <%
   const fechaHabilitacion = evaluacion.fecha_habilitacion ? new Date(evaluacion.fecha_habilitacion) : null;
   const ahora = new Date();
