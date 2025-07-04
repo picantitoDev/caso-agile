@@ -289,11 +289,13 @@ async function guardarCambios(req, res) {
   try {
     const id_solicitud = req.params.id;
     const archivos = req.files;
-    const nombreUsuario = req.user.username; 
+    const nombreUsuario = req.user.username;
 
     if (!archivos || Object.keys(archivos).length === 0) {
       return res.status(400).send("No se recibieron archivos.");
     }
+
+    const seccionesModificadas = [];
 
     for (let fieldName in archivos) {
       const match = fieldName.match(/archivos\[(\d+)\]\[\]/);
@@ -302,7 +304,7 @@ async function guardarCambios(req, res) {
       const seccionId = parseInt(match[1], 10);
       const archivosSeccion = archivos[fieldName];
 
-      // 1. Verificar si esta sección ya fue "en proceso" dos veces
+      // Verificar si esta sección está en su segunda habilitación
       const evaluacion = await dbSolicitudes.obtenerEvaluacionIndividual(id_solicitud, seccionId);
       const yaSubioEvidenciaFinal =
         evaluacion &&
@@ -320,34 +322,41 @@ async function guardarCambios(req, res) {
         );
       }
 
-      // 2. Enviar correo si corresponde
+      // Acumular nombre de la sección si aplica para enviar correo después
       if (yaSubioEvidenciaFinal) {
-        const solicitud = await dbSolicitudes.obtenerSolicitudPorId(id_solicitud);
-        const carrera = solicitud.nombre_carrera;
-        const universidad = solicitud.nombre_universidad;
-
         const seccion = await dbSolicitudes.obtenerSeccionPorId(seccionId);
         const nombreSeccion = seccion?.nombre || `Sección #${seccionId}`;
+        seccionesModificadas.push(nombreSeccion);
+      }
+    }
 
-        const transporter = nodemailer.createTransport({
-          service: 'gmail',
-          auth: {
-            user: 'stockcloud.soporte@gmail.com',
-            pass: 'ktte cwnu eojo eaxt',
-          }
-        });
+    // Enviar un único correo con todas las secciones modificadas
+    if (seccionesModificadas.length > 0) {
+      const solicitud = await dbSolicitudes.obtenerSolicitudPorId(id_solicitud);
+      const carrera = solicitud.nombre_carrera;
+      const universidad = solicitud.nombre_universidad;
+
+      const listaSecciones = seccionesModificadas.map(s => `<li>${s}</li>`).join("");
+
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'stockcloud.soporte@gmail.com',
+          pass: 'ktte cwnu eojo eaxt',
+        }
+      });
 
       await transporter.sendMail({
         from: 'stockcloud.soporte@gmail.com',
         to: 'piero.dev@outlook.com',
         subject: '📩 Nueva evidencia subida por usuario',
         html: `
-          <p>El usuario <strong>${nombreUsuario}</strong> ha subido nueva evidencia para la sección <strong>${nombreSeccion}</strong>.</p>
+          <p>El usuario <strong>${nombreUsuario}</strong> ha subido nueva evidencia para las siguientes secciones:</p>
+          <ul>${listaSecciones}</ul>
           <p>Solicitud: <strong>${carrera}</strong> - <em>${universidad}</em></p>
-          <p>Esta es la segunda y última habilitación de evidencia.</p>
+          <p>Estas son las segundas y últimas habilitaciones de evidencia.</p>
         `
       });
-      }
     }
 
     res.redirect(`/user/home`);
@@ -356,6 +365,7 @@ async function guardarCambios(req, res) {
     res.status(500).send("Error al guardar cambios");
   }
 }
+
 
 async function gestionDetalleSolicitudGet(req, res) {
   try {
@@ -620,9 +630,6 @@ console.log(evaluaciones.map(ev => ({
     res.status(500).send("Error al cargar resultados de solicitud");
   }
 }
-
-
-
 
 async function descargarArchivoUsuario(req, res) {
   try {
