@@ -88,12 +88,6 @@
   </div>
 <% } %>
 
-<% if (seccionBloqueadaFinal) { %>
-  <div class="alerta-bloqueada" style="background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404;">
-    ⚠️ Esta sección ya fue marcada dos veces como "En proceso" y no puede volver a ser editada.
-  </div>
-<% } %>
-
 <form 
   method="POST" 
   action="/admin/evaluar/<%= solicitud.id_solicitud %>/<%= seccion.id_seccion %>" 
