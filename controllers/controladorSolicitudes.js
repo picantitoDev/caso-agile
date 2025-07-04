@@ -6,8 +6,8 @@ const { generateICACITCertificate } = require("../utils/generadorCertificados");
 const path = require('path');
 const fs = require('fs')
 
-const MINUTOS = 1;
-const MINUTOS_SEGUNDA_OPORTUNIDAD = 2;
+const MINUTOS = 10;
+const MINUTOS_SEGUNDA_OPORTUNIDAD = 10;
 
 async function crearSolicitudGet(req, res) {
   try {
