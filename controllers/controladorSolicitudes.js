@@ -72,9 +72,10 @@ async function crearSolicitudPost(req, res) {
 async function gestionSolicitudesGet(req, res) {
   try {
     const solicitudes = await dbSolicitudes.obtenerSolicitudes()
+    const secciones = await dbSolicitudes.obtenerSecciones()
     const hoy = DateTime.now().setZone("America/Lima")
 
-    // Verifica si alguna solicitud venció y actualiza su estado si es necesario
+    // Evaluar y actualizar estados
     await Promise.all(
       solicitudes.map(async (solicitud) => {
         const fechaCreacion = DateTime.fromJSDate(new Date(solicitud.fecha_creacion)).setZone("America/Lima")
@@ -82,7 +83,29 @@ async function gestionSolicitudesGet(req, res) {
 
         if (minutos >= 2 && solicitud.estado === "pendiente") {
           await dbSolicitudes.actualizarEstadoSolicitud(solicitud.id_solicitud, "en_evaluacion")
-          solicitud.estado = "en_evaluacion" // actualizar en memoria
+          solicitud.estado = "en_evaluacion"
+        }
+
+        // Verificar si puede marcarse como finalizada
+        if (solicitud.estado === "en_evaluacion") {
+          const evaluaciones = await dbSolicitudes.obtenerEvaluacionesPorSolicitud(solicitud.id_solicitud)
+
+          const todasEvaluadas = secciones.every(seccion => {
+            const ev = evaluaciones.find(e =>
+              e.id_seccion === seccion.id_seccion &&
+              e.id_solicitud === solicitud.id_solicitud
+            )
+            return ev && ["Logrado", "No logrado", "En proceso"].includes(ev.estado)
+          })
+
+          const algunaEditable = evaluaciones.some(ev =>
+            ev.estado === "En proceso" && (ev.veces_en_proceso ?? 0) < 2
+          )
+
+          if (todasEvaluadas && !algunaEditable) {
+            await dbSolicitudes.actualizarEstadoSolicitud(solicitud.id_solicitud, "finalizada")
+            solicitud.estado = "finalizada"
+          }
         }
       })
     )
@@ -142,6 +165,11 @@ async function verSolicitudesUsuario(req, res) {
           );
 
           evaluacionesCompletas = todasEvaluadas && !algunaEditable;
+
+          if (evaluacionesCompletas && solicitud.estado === "en_evaluacion") {
+            await dbSolicitudes.actualizarEstadoSolicitud(solicitud.id_solicitud, "finalizada");
+            solicitud.estado = "finalizada";
+          }
         }
 
         return {

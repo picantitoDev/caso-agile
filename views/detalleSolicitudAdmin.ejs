@@ -82,7 +82,8 @@
 <% if (seccionBloqueadaTiempo) { %>
   <div class="alerta-bloqueada">
     ⚠️ Esta sección fue marcada como "En proceso". El usuario puede subir nueva evidencia hasta las 
-    <strong><%= new Date(fechaHabilitacion.getTime() + 3 * 60 * 1000).toLocaleTimeString('es-PE') %></strong>.
+    <strong><%= new Date(fechaHabilitacion.getTime() + 3 * 60 * 1000).toLocaleTimeString('es-PE', { timeZone: 'America/Lima' }) %>
+</strong>.
     No se puede evaluar hasta entonces.
   </div>
 <% } %>

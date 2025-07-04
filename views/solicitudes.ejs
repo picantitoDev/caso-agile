@@ -8,7 +8,7 @@
   <body>
     <header>
       <a class="back-btn" href="/admin/home">← Atrás</a>
-      <h1>Solicitudes de Acreditación en Progreso</h1>
+        <h1>Listado de Solicitudes de Acreditación</h1>
       <div></div>
     </header>
 
@@ -36,11 +36,28 @@
             <td><%= solicitud.username %></td>
             <td><%= solicitud.nombre_carrera %></td>
             <td>
-              <%= solicitud.fecha_creacion ? new
-              Date(solicitud.fecha_creacion).toLocaleDateString('es-PE', { day:
-              '2-digit', month: '2-digit', year: 'numeric' }) : "Sin fecha" %>
+            <%= solicitud.fecha_creacion 
+              ? new Date(solicitud.fecha_creacion).toLocaleString('es-PE', { 
+                  day: '2-digit', 
+                  month: '2-digit', 
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  timeZone: 'America/Lima'
+                }) 
+              : "Sin fecha" %>
             </td>
-            <td><%= solicitud.estado === 'pendiente' ? 'Pendiente' : 'En Evaluación' %></td>
+            <td>
+              <% if (solicitud.estado === 'pendiente') { %>
+                Pendiente
+              <% } else if (solicitud.estado === 'en_evaluacion') { %>
+                En Evaluación
+              <% } else if (solicitud.estado === 'finalizada') { %>
+                Finalizada
+              <% } else { %>
+                <%= solicitud.estado %>
+              <% } %>
+            </td>
             <td>
               <a
                 class="btn-gestionar"

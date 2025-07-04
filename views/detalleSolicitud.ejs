@@ -67,13 +67,11 @@
             <%= seccion.nombre .split(' ') .map(p => p.charAt(0).toUpperCase() +
             p.slice(1)) .join(' ') %>
           </h2>
-
-<% 
-  const seccionData = archivosPorSeccion.find(a => a.seccion.id_seccion === seccion.id_seccion);
-  const archivosSeccion = seccionData || { archivos: [] };
-  const editable = seccionData?.editable;
-%>
-          
+          <% 
+            const seccionData = archivosPorSeccion.find(a => a.seccion.id_seccion === seccion.id_seccion);
+            const archivosSeccion = seccionData || { archivos: [] };
+            const editable = seccionData?.editable;
+          %>
           <% if
           (archivosSeccion && archivosSeccion.archivos.length > 0) { %>
           <div class="archivos-subidos">
@@ -82,15 +80,15 @@
               <% archivosSeccion.archivos.forEach(archivo => { %>
               <li>
                 <%= archivo.nombre_archivo %>
-<% if (editable) { %>
-  <button
-    type="button"
-    class="btn-eliminar"
-    onclick="eliminarArchivo('<%= archivo.id_archivo %>')"
-  >
-    Eliminar
-  </button>
-<% } %>
+                <% if (editable) { %>
+                  <button
+                    type="button"
+                    class="btn-eliminar"
+                    onclick="eliminarArchivo('<%= archivo.id_archivo %>')"
+                  >
+                    Eliminar
+                  </button>
+                <% } %>
               </li>
               <% }) %>
             </ul>
@@ -102,21 +100,21 @@
           <label for="archivo-<%= seccion.id_seccion %>"
             >Subir archivo(s):</label
           >
-<% if (editable) { %>
-  <label for="archivo-<%= seccion.id_seccion %>">Subir archivo(s):</label>
-  <input
-    type="file"
-    id="archivo-<%= seccion.id_seccion %>"
-    name="archivos[<%= seccion.id_seccion %>][]"
-    multiple
-    accept=".pdf"
-    data-id="<%= seccion.id_seccion %>"
-    class="input-archivos"
-  />
-  <div id="preview-<%= seccion.id_seccion %>" class="archivos-nuevos"></div>
-<% } else { %>
-  <p><em>Actualmente esta sección no está habilitada para subir archivos.</em></p>
-<% } %>
+          <% if (editable) { %>
+            <label for="archivo-<%= seccion.id_seccion %>">Subir archivo(s):</label>
+            <input
+              type="file"
+              id="archivo-<%= seccion.id_seccion %>"
+              name="archivos[<%= seccion.id_seccion %>][]"
+              multiple
+              accept=".pdf"
+              data-id="<%= seccion.id_seccion %>"
+              class="input-archivos"
+            />
+            <div id="preview-<%= seccion.id_seccion %>" class="archivos-nuevos"></div>
+          <% } else { %>
+            <p><em>Actualmente esta sección no está habilitada para subir archivos.</em></p>
+          <% } %>
 
           <div
             id="preview-<%= seccion.id_seccion %>"
@@ -144,106 +142,133 @@
       </form>
     </div>
 
-    <script>
-      document.querySelectorAll(".input-archivos").forEach((input) => {
-        input.addEventListener("change", function () {
-          const idSeccion = input.dataset.id
-          const previewContainer = document.getElementById(
-            "preview-" + idSeccion
-          )
-          const files = Array.from(input.files)
+<script>
+  const archivosPorSeccion = new Map();
 
-          // Limpia vista anterior
-          previewContainer.innerHTML = ""
+  document.querySelectorAll(".input-archivos").forEach((input) => {
+    input.addEventListener("change", function () {
+      const idSeccion = input.dataset.id;
+      const nuevosArchivos = Array.from(input.files);
 
-          files.forEach((file, index) => {
-            const div = document.createElement("div")
-            div.classList.add("archivo-preview")
+      // Obtener los archivos anteriores si existen
+      const archivosAcumulados = archivosPorSeccion.get(idSeccion) || [];
 
-            const span = document.createElement("span")
-            span.textContent = file.name
+      // Combinar los archivos nuevos con los anteriores (sin duplicados por nombre)
+      const combinados = [...archivosAcumulados];
 
-            const btn = document.createElement("button")
-            btn.textContent = "X"
-            btn.classList.add("btn-eliminar")
+      nuevosArchivos.forEach((nuevo) => {
+        // Evita duplicados por nombre
+        if (!combinados.some((a) => a.name === nuevo.name)) {
+          combinados.push(nuevo);
+        }
+      });
 
-            btn.addEventListener("click", () => {
-              files.splice(index, 1)
+      // Guardar la lista combinada
+      archivosPorSeccion.set(idSeccion, combinados);
 
-              // Crear nuevo objeto FileList simulando eliminación
-              const dt = new DataTransfer()
-              files.forEach((f) => dt.items.add(f))
-              input.files = dt.files
+      // Crear FileList artificial
+      const dt = new DataTransfer();
+      combinados.forEach((file) => dt.items.add(file));
+      input.files = dt.files;
 
-              // Recargar vista
-              input.dispatchEvent(new Event("change"))
-            })
+      // Actualizar vista previa
+      actualizarPreview(idSeccion, input);
+    });
+  });
 
-            div.appendChild(span)
-            div.appendChild(btn)
-            previewContainer.appendChild(div)
-          })
-        })
+  function actualizarPreview(idSeccion, input) {
+    const previewContainer = document.getElementById("preview-" + idSeccion);
+    const archivos = archivosPorSeccion.get(idSeccion) || [];
+
+    previewContainer.innerHTML = "";
+
+    archivos.forEach((file, index) => {
+      const div = document.createElement("div");
+      div.classList.add("archivo-preview");
+
+      const span = document.createElement("span");
+      span.textContent = file.name;
+
+      const btn = document.createElement("button");
+      btn.textContent = "X";
+      btn.classList.add("btn-eliminar");
+
+      btn.addEventListener("click", () => {
+        archivos.splice(index, 1);
+
+        // Actualizar mapa
+        archivosPorSeccion.set(idSeccion, archivos);
+
+        // Crear nuevo objeto FileList sin el archivo eliminado
+        const dt = new DataTransfer();
+        archivos.forEach((f) => dt.items.add(f));
+        input.files = dt.files;
+
+        actualizarPreview(idSeccion, input);
+      });
+
+      div.appendChild(span);
+      div.appendChild(btn);
+      previewContainer.appendChild(div);
+    });
+  }
+
+  function eliminarArchivo(idArchivo) {
+    if (!confirm("¿Estás seguro de que deseas eliminar este archivo?")) return;
+
+    fetch(
+      `/user/solicitudes/<%= solicitudId %>/eliminar-archivo/${idArchivo}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then((res) => {
+        if (!res.ok) throw new Error("Error al eliminar el archivo.");
+        location.reload();
       })
+      .catch((err) => {
+        console.error(err);
+        alert("Ocurrió un error al eliminar el archivo.");
+      });
+  }
 
-      function eliminarArchivo(idArchivo) {
-        if (!confirm("¿Estás seguro de que deseas eliminar este archivo?"))
-          return
+  document
+    .getElementById("formulario")
+    .addEventListener("submit", function (e) {
+      const inputs = document.querySelectorAll(".input-archivos");
+      let hayArchivos = false;
+      let archivosInvalidos = false;
 
-        fetch(
-          `/user/solicitudes/<%= solicitudId %>/eliminar-archivo/${idArchivo}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        )
-          .then((res) => {
-            if (!res.ok) throw new Error("Error al eliminar el archivo.")
-            location.reload()
-          })
-          .catch((err) => {
-            console.error(err)
-            alert("Ocurrió un error al eliminar el archivo.")
-          })
+      inputs.forEach((input) => {
+        const files = Array.from(input.files);
+
+        if (files.length > 0) {
+          hayArchivos = true;
+
+          files.forEach((file) => {
+            if (file.type !== "application/pdf") {
+              archivosInvalidos = true;
+            }
+          });
+        }
+      });
+
+      if (!hayArchivos) {
+        e.preventDefault();
+        alert("Debes subir al menos un archivo antes de guardar los cambios.");
+        return;
       }
 
-      document
-        .getElementById("formulario")
-        .addEventListener("submit", function (e) {
-          const inputs = document.querySelectorAll(".input-archivos")
-          let hayArchivos = false
-          let archivosInvalidos = false
+      if (archivosInvalidos) {
+        e.preventDefault();
+        alert("Solo se permiten archivos PDF.");
+        return;
+      }
+    });
+</script>
 
-          inputs.forEach((input) => {
-            const files = Array.from(input.files)
-
-            if (files.length > 0) {
-              hayArchivos = true
-
-              files.forEach((file) => {
-                if (file.type !== "application/pdf") {
-                  archivosInvalidos = true
-                }
-              })
-            }
-          })
-
-          if (!hayArchivos) {
-            e.preventDefault()
-            alert(
-              "Debes subir al menos un archivo antes de guardar los cambios."
-            )
-            return
-          }
-
-          if (archivosInvalidos) {
-            e.preventDefault()
-            alert("Solo se permiten archivos PDF.")
-            return
-          }
-        })
-    </script>
   </body>
 </html>
