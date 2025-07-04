@@ -289,6 +289,7 @@ async function guardarCambios(req, res) {
   try {
     const id_solicitud = req.params.id;
     const archivos = req.files;
+    const nombreUsuario = req.user.username; 
 
     if (!archivos || Object.keys(archivos).length === 0) {
       return res.status(400).send("No se recibieron archivos.");
@@ -336,16 +337,16 @@ async function guardarCambios(req, res) {
           }
         });
 
-        await transporter.sendMail({
-          from: 'stockcloud.soporte@gmail.com',
-          to: 'piero.dev@outlook.com',
-          subject: '📩 Nueva evidencia subida por usuario',
-          html: `
-            <p>El usuario ha subido nueva evidencia para la sección <strong>${nombreSeccion}</strong>.</p>
-            <p>Solicitud: <strong>${carrera}</strong> - <em>${universidad}</em></p>
-            <p>Esta es la segunda y última habilitación de evidencia.</p>
-          `
-        });
+      await transporter.sendMail({
+        from: 'stockcloud.soporte@gmail.com',
+        to: 'piero.dev@outlook.com',
+        subject: '📩 Nueva evidencia subida por usuario',
+        html: `
+          <p>El usuario <strong>${nombreUsuario}</strong> ha subido nueva evidencia para la sección <strong>${nombreSeccion}</strong>.</p>
+          <p>Solicitud: <strong>${carrera}</strong> - <em>${universidad}</em></p>
+          <p>Esta es la segunda y última habilitación de evidencia.</p>
+        `
+      });
       }
     }
 
@@ -512,13 +513,16 @@ async function evaluarSeccionPost(req, res) {
           },
         });
 
+        const seccion = await dbSolicitudes.obtenerSeccionPorId(id_seccion);
+        const nombreSeccion = seccion?.nombre || `Sección #${id_seccion}`;
+
         await transporter.sendMail({
           from: 'stockcloud.soporte@gmail.com',
           to: usuario.email,
           subject: '🔔 Sección habilitada para nueva evidencia',
           html: `
             <p>Hola <strong>${usuario.username}</strong>,</p>
-            <p>Una sección de tu solicitud <strong>${solicitud.nombre_carrera}</strong> ha sido marcada como <strong>En proceso</strong>.</p>
+            <p>La sección <strong>${nombreSeccion}</strong> de tu solicitud <strong>${solicitud.nombre_carrera}</strong> ha sido marcada como <strong>En proceso</strong>.</p>
             <p>Puedes subir nueva evidencia en los próximos días desde tu panel de solicitudes.</p>
             <p>Saludos,<br>Equipo de Acreditación</p>
           `,
