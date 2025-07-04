@@ -47,7 +47,7 @@
                 }) 
               : "Sin fecha" %>
             </td>
-            <td>
+            <td class="status-<%= solicitud.estado === 'pendiente' ? 'pendiente' : solicitud.estado === 'en_evaluacion' ? 'evaluacion' : 'finalizada' %>"> 
               <% if (solicitud.estado === 'pendiente') { %>
                 Pendiente
               <% } else if (solicitud.estado === 'en_evaluacion') { %>

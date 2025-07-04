@@ -5,44 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Detalle de Solicitud</title>
     <link rel="stylesheet" href="/detalleSolicitud.css" />
-    <style>
-      .archivo-preview {
-        display: flex;
-        align-items: center;
-        margin-top: 5px;
-        gap: 10px;
-      }
-
-      .archivo-preview span {
-        flex: 1;
-      }
-
-      .btn-eliminar {
-        background-color: #e57373;
-        border: none;
-        color: white;
-        cursor: pointer;
-        padding: 4px 8px;
-        border-radius: 4px;
-      }
-
-      .btn-eliminar:hover {
-        background-color: #d32f2f;
-      }
-
-      .archivos-nuevos {
-        margin-top: 10px;
-      }
-
-      .estado-evaluacion {
-  background-color: #eee;
-  padding: 10px;
-  border-left: 4px solid #9c27b0;
-  margin-top: 10px;
-  border-radius: 5px;
-}
-    </style>
-  </head>
+    </head>
   <body>
     <header>
       <h1>Detalle de Solicitud</h1>
@@ -96,10 +59,6 @@
           <% } else { %>
           <p>No se han subido archivos aún.</p>
           <% } %>
-
-          <label for="archivo-<%= seccion.id_seccion %>"
-            >Subir archivo(s):</label
-          >
           <% if (editable) { %>
             <label for="archivo-<%= seccion.id_seccion %>">Subir archivo(s):</label>
             <input
@@ -256,6 +215,12 @@
         alert("Solo se permiten archivos PDF.");
         return;
       }
+
+          const submitBtn = this.querySelector("button[type='submit']");
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Guardando...";
+        submitBtn.style.cursor = "not-allowed";
+
     });
 </script>
 

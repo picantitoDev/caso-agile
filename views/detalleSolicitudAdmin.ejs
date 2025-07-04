@@ -123,22 +123,28 @@
         </div>
       <% }) %>
     </main>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const formularios = document.querySelectorAll(".form-evaluacion");
 
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const formularios = document.querySelectorAll(".form-evaluacion");
+    // Restaurar scroll si existe
+    const scrollY = localStorage.getItem("scrollY");
+    if (scrollY) {
+      window.scrollTo(0, parseInt(scrollY, 10));
+      localStorage.removeItem("scrollY");
+    }
 
-        formularios.forEach(form => {
-          form.addEventListener("submit", function (e) {
-            const btn = form.querySelector("button[type='submit']");
-            btn.disabled = true;
-            btn.textContent = "Guardando...";
-            setTimeout(() => {
-              alert("✅ Evaluación guardada correctamente");
-            }, 100);
-          });
-        });
+    formularios.forEach(form => {
+      form.addEventListener("submit", function () {
+        const btn = form.querySelector("button[type='submit']");
+        btn.disabled = true;
+        btn.textContent = "Guardando...";
+
+        // Guardar posición actual del scroll
+        localStorage.setItem("scrollY", window.scrollY);
       });
-    </script>
+    });
+  });
+</script>
   </body>
 </html>

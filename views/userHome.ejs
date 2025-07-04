@@ -28,52 +28,54 @@
     </header>
 
     <div class="container">
-      <div class="card">
-        <h2 class="card-title">Carreras Solicitadas</h2>
-        <div class="carrera-list">
-          <% if (solicitudes.length === 0) { %>
-            <p>No tienes solicitudes registradas.</p>
-          <% } %>
+  <div class="card">
+    <h2 class="card-title">Carreras Solicitadas</h2>
+    <div class="carrera-list">
+      <% if (solicitudes.length === 0) { %>
+        <p class="empty-state">No tienes solicitudes registradas.</p>
+      <% } %>
 
-          <% solicitudes.forEach(solicitud => { %>
-            <div class="carrera-item">
-              <div class="carrera-name"><%= solicitud.nombre_carrera %></div>
-              <div class="carrera-actions">
-                <span class="status-badge status-<%= solicitud.estado.toLowerCase() %>">
-                  <% if (solicitud.estado === 'pendiente') { %>
-                    En Proceso
-                  <% } else if (solicitud.estado === 'en_evaluacion') { %>
-                    En Evaluación
-                  <% } else if (solicitud.estado === 'finalizada') { %>
-                    Finalizada
-                  <% } else { %>
-                    <%= solicitud.estado %>
-                  <% } %>
-                </span>
-
-                <p>Fecha de creación: <%= solicitud.fechaCreacion %></p>
-
-              <% if (solicitud.estado === 'pendiente' || solicitud.seccionesHabilitadas) { %>
-                <form action="/user/solicitudes/<%= solicitud.id_solicitud %>" method="GET">
-                  <button class="action-btn">Gestionar</button>
-                </form>
-              <% } else if (
-                (solicitud.estado === 'en_evaluacion' && solicitud.evaluacionesCompletas) ||
-                solicitud.estado === 'finalizada'
-              ) { %>
-                <form action="/user/solicitudes/<%= solicitud.id_solicitud %>/resultados" method="GET">
-                  <button class="action-btn">Ver resultados</button>
-                </form>
-              <% } else { %>
-                <button class="action-btn vencida" disabled>En revisión</button>
-              <% } %>
-
-
-              </div>
+      <% solicitudes.forEach(solicitud => { %>
+        <div class="carrera-item">
+          <div class="carrera-info">
+            <div class="carrera-name"><%= solicitud.nombre_carrera %></div>
+            <div class="carrera-meta">
+              <span class="status-badge status-<%= solicitud.estado.toLowerCase() %>">
+                <% if (solicitud.estado === 'pendiente') { %>
+                  En Proceso
+                <% } else if (solicitud.estado === 'en_evaluacion') { %>
+                  En Evaluación
+                <% } else if (solicitud.estado === 'finalizada') { %>
+                  Finalizada
+                <% } else { %>
+                  <%= solicitud.estado %>
+                <% } %>
+              </span>
+              <span class="creation-date">Fecha: <%= solicitud.fechaCreacion %></span>
             </div>
-          <% }) %>
+          </div>
+          
+          <div class="carrera-actions">
+            <% if (solicitud.estado === 'pendiente' || solicitud.seccionesHabilitadas) { %>
+              <form action="/user/solicitudes/<%= solicitud.id_solicitud %>" method="GET">
+                <button class="action-btn">Gestionar</button>
+              </form>
+            <% } else if (
+              (solicitud.estado === 'en_evaluacion' && solicitud.evaluacionesCompletas) ||
+              solicitud.estado === 'finalizada'
+            ) { %>
+              <form action="/user/solicitudes/<%= solicitud.id_solicitud %>/resultados" method="GET">
+                <button class="action-btn">Ver resultados</button>
+              </form>
+            <% } else { %>
+              <button class="action-btn vencida" disabled>En revisión</button>
+            <% } %>
+          </div>
         </div>
-      </div>
+      <% }) %>
+    </div>
+  </div>
+</div>
     </div>
   </body>
 </html>
