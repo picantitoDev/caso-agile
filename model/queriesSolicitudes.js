@@ -189,6 +189,14 @@ async function actualizarEstadoSolicitud(idSolicitud, nuevoEstado) {
   }
 }
 
+async function obtenerSeccionPorId(id_seccion) {
+  const result = await pool.query(
+    `SELECT * FROM seccion WHERE id_seccion = $1`,
+    [id_seccion]
+  );
+  return result.rows[0] || null;
+}
+
 module.exports = {
   obtenerSecciones,
   obtenerArchivosPorSolicitud,
@@ -205,5 +213,6 @@ module.exports = {
   obtenerEvaluacionIndividual,
   insertarEvaluacion,
   actualizarEvaluacion,
-  actualizarEstadoSolicitud
+  actualizarEstadoSolicitud,
+  obtenerSeccionPorId
 }
