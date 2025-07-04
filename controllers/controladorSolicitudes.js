@@ -259,37 +259,72 @@ async function verDetalleSolicitud(req, res) {
 // controllers/controladorSolicitudes.js
 async function guardarCambios(req, res) {
   try {
-    const id_solicitud = req.params.id
-    const archivos = req.files
+    const id_solicitud = req.params.id;
+    const archivos = req.files;
 
     if (!archivos || Object.keys(archivos).length === 0) {
-      return res.status(400).send("No se recibieron archivos.")
+      return res.status(400).send("No se recibieron archivos.");
     }
 
     for (let fieldName in archivos) {
-      const match = fieldName.match(/archivos\[(\d+)\]\[\]/)
-      if (!match) continue // Si no coincide con el patrón esperado, lo salta
+      const match = fieldName.match(/archivos\[(\d+)\]\[\]/);
+      if (!match) continue;
 
-      const seccionId = parseInt(match[1], 10)
-      const archivosSeccion = archivos[fieldName]
+      const seccionId = parseInt(match[1], 10);
+      const archivosSeccion = archivos[fieldName];
 
+      // 1. Verificar si esta sección ya fue "en proceso" dos veces
+      const evaluacion = await dbSolicitudes.obtenerEvaluacionIndividual(id_solicitud, seccionId);
+      const yaSubioEvidenciaFinal =
+        evaluacion &&
+        evaluacion.estado === "En proceso" &&
+        evaluacion.veces_en_proceso === 1;
+
+      // Guardar los archivos
       for (let archivo of archivosSeccion) {
-        const archivoBuffer = archivo.buffer
-
         await dbSolicitudes.guardarArchivo(
           id_solicitud,
           seccionId,
           archivo.originalname,
           archivo.mimetype,
-          archivoBuffer
-        )
+          archivo.buffer
+        );
+      }
+
+      // 2. Enviar correo si corresponde
+      if (yaSubioEvidenciaFinal) {
+        const solicitud = await dbSolicitudes.obtenerSolicitudPorId(id_solicitud);
+        const carrera = solicitud.nombre_carrera;
+        const universidad = solicitud.nombre_universidad;
+
+        const seccion = await dbSolicitudes.obtenerSeccionPorId(seccionId);
+        const nombreSeccion = seccion?.nombre || `Sección #${seccionId}`;
+
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: 'stockcloud.soporte@gmail.com',
+            pass: 'ktte cwnu eojo eaxt',
+          }
+        });
+
+        await transporter.sendMail({
+          from: 'stockcloud.soporte@gmail.com',
+          to: 'piero.dev@outlook.com',
+          subject: '📩 Nueva evidencia subida por usuario',
+          html: `
+            <p>El usuario ha subido nueva evidencia para la sección <strong>${nombreSeccion}</strong>.</p>
+            <p>Solicitud: <strong>${carrera}</strong> - <em>${universidad}</em></p>
+            <p>Esta es la segunda y última habilitación de evidencia.</p>
+          `
+        });
       }
     }
 
-    res.redirect(`/user/home`)
+    res.redirect(`/user/home`);
   } catch (error) {
-    console.error("Error al guardar cambios:", error)
-    res.status(500).send("Error al guardar cambios")
+    console.error("Error al guardar cambios:", error);
+    res.status(500).send("Error al guardar cambios");
   }
 }
 
