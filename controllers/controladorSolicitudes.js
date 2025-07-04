@@ -6,6 +6,8 @@ const { generateICACITCertificate } = require("../utils/generadorCertificados");
 const path = require('path');
 const fs = require('fs')
 
+const MINUTOS = 2;
+const MINUTOS_SEGUNDA_OPORTUNIDAD = 2;
 
 async function crearSolicitudGet(req, res) {
   try {
@@ -81,7 +83,7 @@ async function gestionSolicitudesGet(req, res) {
         const fechaCreacion = DateTime.fromJSDate(new Date(solicitud.fecha_creacion)).setZone("America/Lima")
         const minutos = hoy.diff(fechaCreacion, "minutes").minutes;
 
-        if (minutos >= 2 && solicitud.estado === "pendiente") {
+        if (minutos >= MINUTOS && solicitud.estado === "pendiente") {
           await dbSolicitudes.actualizarEstadoSolicitud(solicitud.id_solicitud, "en_evaluacion")
           solicitud.estado = "en_evaluacion"
         }
@@ -129,7 +131,7 @@ async function verSolicitudesUsuario(req, res) {
       solicitudes.map(async (solicitud) => {
         const fechaCreacion = DateTime.fromJSDate(new Date(solicitud.fecha_creacion)).setZone("America/Lima");
         const diferenciaMinutos = hoy.diff(fechaCreacion, "minutes").minutes;
-        const vencida = diferenciaMinutos >= 2;
+        const vencida = diferenciaMinutos >= MINUTOS;
 
         if (vencida && solicitud.estado === "pendiente") {
           await dbSolicitudes.actualizarEstadoSolicitud(solicitud.id_solicitud, "en_evaluacion");
@@ -146,7 +148,7 @@ async function verSolicitudesUsuario(req, res) {
           seccionesHabilitadas = evaluaciones.some(ev => {
             if (ev.estado !== "En proceso" || !ev.fecha_habilitacion) return false;
             const fecha = DateTime.fromJSDate(ev.fecha_habilitacion).setZone("America/Lima");
-            return hoy.diff(fecha, "minutes").minutes < 3;
+            return hoy.diff(fecha, "minutes").minutes < MINUTOS_SEGUNDA_OPORTUNIDAD;
           });
 
           // ✅ Evaluaciones completas si:
@@ -234,7 +236,7 @@ async function verDetalleSolicitud(req, res) {
       ) {
         const fecha = DateTime.fromJSDate(evaluacion.fecha_habilitacion).setZone("America/Lima");
         const minutos = ahora.diff(fecha, "minutes").minutes;
-        editable = minutos < 3;
+        editable = minutos < MINUTOS_SEGUNDA_OPORTUNIDAD;
 
         if (editable) {
           seccionEditable = true;
