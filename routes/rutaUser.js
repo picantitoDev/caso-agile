@@ -27,5 +27,7 @@ router.post(
 
 router.get('/solicitudes/:id/resultados', controladorSolicitudes.verResultadosSolicitud)
 router.get('/descargar-archivo/:id_archivo', controladorSolicitudes.descargarArchivoUsuario)
+router.get('/certificado/:id_solicitud', controladorSolicitudes.emitirCertificado)
+
 
 module.exports = router

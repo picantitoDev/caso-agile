@@ -2,8 +2,8 @@ const dbUsuarios = require("../model/queriesUsuarios")
 const dbSolicitudes = require("../model/queriesSolicitudes")
 const { DateTime } = require("luxon")
 const nodemailer = require("nodemailer");
-
-const path = require('path')
+const { generateICACITCertificate } = require("../utils/generadorCertificados");
+const path = require('path');
 const fs = require('fs')
 
 
@@ -590,6 +590,62 @@ async function descargarArchivoUsuario(req, res) {
   }
 }
 
+async function emitirCertificado(req, res) {
+  const { id_solicitud } = req.params;
+
+  try {
+    const solicitud = await dbSolicitudes.obtenerSolicitudPorId(id_solicitud);
+    if (!solicitud) return res.status(404).send("Solicitud no encontrada.");
+
+    const usuario = await dbUsuarios.buscarUsuarioPorId(solicitud.id_usuario);
+    if (!usuario) return res.status(404).send("Usuario no encontrado.");
+
+    const evaluaciones = await dbSolicitudes.obtenerEvaluacionesPorSolicitud(id_solicitud);
+    if (!evaluaciones || evaluaciones.length === 0) {
+      return res.status(400).send("No hay evaluaciones disponibles.");
+    }
+
+    const tieneNoLogrado = evaluaciones.some(ev => ev.estado === "No logrado");
+    const tieneEnProceso = evaluaciones.some(ev => ev.estado === "En proceso");
+    const todosLogrados = evaluaciones.every(ev => ev.estado === "Logrado");
+
+    let aniosAcreditacion = 0;
+    if (tieneNoLogrado) {
+      return res.status(400).send("La carrera no acredita. No se puede emitir certificado.");
+    } else if (todosLogrados) {
+      aniosAcreditacion = 6;
+    } else if (tieneEnProceso && !tieneNoLogrado) {
+      aniosAcreditacion = 2;
+    }
+
+    // Año actual + años de acreditación
+    const anioFinal = `${DateTime.now().plus({ years: aniosAcreditacion }).year}`;
+
+    // 🧠 Nueva versión: generar certificado como buffer en memoria
+    const buffer = await generateICACITCertificate({
+      programName: solicitud.nombre_carrera,
+      universityName: solicitud.nombre_universidad,
+      modalidad: "modalidad presencial del campus Principal",
+      accreditationDate: anioFinal,
+      presidenteName: 'Enrique Alvarez Rodrich',
+      technicalCommitteePresidentName: 'César Gallegos Chávez',
+      logoPath: path.join(__dirname, '..', 'public', 'logo-icacit.png'),
+      leftSignaturePath: path.join(__dirname, '..', 'public', 'firma1.png'),
+      rightSignaturePath: path.join(__dirname, '..', 'public', 'firma2.png'),
+      returnBuffer: true
+    });
+    
+    // Enviar al navegador como descarga
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="Certificado-${solicitud.nombre_carrera}.pdf"`);
+    res.send(buffer);
+
+  } catch (error) {
+    console.error("❌ Error en emitirCertificado:", error);
+    res.status(500).send("Error interno al generar certificado.");
+  }
+}
+
 module.exports = {
   crearSolicitudGet,
   crearSolicitudPost,
@@ -602,5 +658,6 @@ module.exports = {
   eliminarArchivo,
   evaluarSeccionPost,
   verResultadosSolicitud,
-  descargarArchivoUsuario
+  descargarArchivoUsuario,
+  emitirCertificado
 }
